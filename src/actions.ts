@@ -1,10 +1,15 @@
 import { state } from ".";
-import { isRoot, Item } from "./tree/tree";
+import { isRoot, item, Item } from "./tree/tree";
 import { getItemAbove, getItemBelow } from "./selection";
 
 export function handleKeyPress(e: KeyboardEvent) {
     if (state.mode == "normal") {
-        const handler = normalModeHandlers.find((h) => h.key == e.code);
+        const handler = normalModeHandlers.find(
+            (h) =>
+                h.key == e.code &&
+                !!h.shift === e.shiftKey &&
+                !!h.ctrl == e.ctrlKey
+        );
         if (handler) handler.fn();
     } else {
         if (e.code == "Escape") state.mode = "normal";
@@ -26,7 +31,37 @@ const normalModeHandlers = [
     { key: "KeyI", fn: () => (state.mode = "insert") },
     { key: "Backspace", fn: removeCharFromLeft },
     { key: "KeyX", fn: removeCurrentChar },
+    { key: "KeyO", fn: addItemBelow },
+    { key: "KeyO", fn: addItemAbove, shift: true },
+    { key: "KeyO", fn: addItemInside, ctrl: true },
 ];
+
+function addItemBelow() {
+    const context = state.selectedItem.parent.children;
+    const index = context.indexOf(state.selectedItem);
+    const newItem = item("");
+    newItem.parent = state.selectedItem.parent;
+    context.splice(index + 1, 0, newItem);
+    changeSelected(newItem);
+    state.mode = "insert";
+}
+function addItemAbove() {
+    const context = state.selectedItem.parent.children;
+    const index = context.indexOf(state.selectedItem);
+    const newItem = item("");
+    newItem.parent = state.selectedItem.parent;
+    context.splice(index, 0, newItem);
+    changeSelected(newItem);
+    state.mode = "insert";
+}
+function addItemInside() {
+    state.selectedItem.isOpen = true;
+    const newItem = item("");
+    state.selectedItem.children.unshift(newItem);
+    newItem.parent = state.selectedItem;
+    changeSelected(newItem);
+    state.mode = "insert";
+}
 
 function changeSelected(item: Item | undefined) {
     if (item) {
