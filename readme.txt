@@ -6,8 +6,19 @@ I want to join next things into a single app:
 - Find similar music bands (last.fm/musicbrainz features)
 - Code (folders/files/code structure in a uniform way) (VSCode features)
 
+Plan
+ - What do I want to replace first: this document editing or Visulty? 
+ - General item in tree editing
+
+
+Core parts
+ - Undo / Redo - I can just remove by accident something
+ - Serialize into local-storage and files
+ - Search? 
+ - Focus? 
+ - Movement
 
 Timeline
  18.12
-    - Tree-like structure with nested items. 
-    - Navigate around items, jump words, close items
+    ✔ Tree-like structure with nested items. 
+    ✔ Navigate around items, jump words, close items

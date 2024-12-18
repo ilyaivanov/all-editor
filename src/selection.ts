@@ -12,9 +12,9 @@ function isFocused(state: AppState, item: Item) {
     return isRoot(item);
 }
 
-// export function getItemToSelectAfterRemovingSelected(item: Item) {
-//     return getItemAbove(item) || getFollowingSibling(item);
-// }
+export function getItemToSelectAfterRemovingSelected(item: Item) {
+    return getItemAbove(item) || getFollowingSibling(item);
+}
 
 export const getItemAbove = (item: Item): Item | undefined => {
     const parent = item.parent;

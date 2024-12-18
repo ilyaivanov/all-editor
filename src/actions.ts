@@ -1,8 +1,14 @@
 import { state } from ".";
 import { isRoot, item, Item } from "./tree/tree";
-import { getItemAbove, getItemBelow } from "./selection";
+import {
+    getItemAbove,
+    getItemBelow,
+    getItemToSelectAfterRemovingSelected,
+} from "./selection";
 
 export function handleKeyPress(e: KeyboardEvent) {
+    if (e.metaKey && e.code == "KeyR") return;
+
     if (state.mode == "normal") {
         const handler = normalModeHandlers.find(
             (h) =>
@@ -34,7 +40,22 @@ const normalModeHandlers = [
     { key: "KeyO", fn: addItemBelow },
     { key: "KeyO", fn: addItemAbove, shift: true },
     { key: "KeyO", fn: addItemInside, ctrl: true },
+    { key: "KeyR", fn: replaceTitle },
+    { key: "KeyD", fn: removeSelectedItem },
 ];
+
+function replaceTitle() {
+    state.selectedItem.title = "";
+    state.mode = "insert";
+}
+
+function removeSelectedItem() {
+    const next = getItemToSelectAfterRemovingSelected(state.selectedItem);
+    const context = state.selectedItem.parent.children;
+    context.splice(context.indexOf(state.selectedItem), 1);
+
+    if (next) state.selectedItem = next;
+}
 
 function addItemBelow() {
     const context = state.selectedItem.parent.children;
