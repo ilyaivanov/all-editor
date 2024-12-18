@@ -1,4 +1,5 @@
 import type { AppState, V2 } from ".";
+import { ctx, view } from "./canvas";
 
 const typography = {
     font: `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -21,7 +22,7 @@ const colors = {
     cursorInsertMode: "rgb(200, 20, 20)",
 };
 
-export function show(ctx: CanvasRenderingContext2D, state: AppState, view: V2) {
+export function show(state: AppState) {
     const { root, position, mode, selectedItem } = state;
     ctx.fillStyle = colors.bg;
     ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);

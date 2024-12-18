@@ -1,10 +1,12 @@
 import type { AppState } from "./index";
-import type { Item } from "./root";
+import {
+    getFollowingSibling,
+    getLastNestedItem,
+    isLast,
+    isRoot,
+    type Item,
+} from "./tree/tree";
 // import { Item, isRoot } from "./utils/tree";
-
-export function isRoot(item: Item) {
-    return item.parent == item;
-}
 
 function isFocused(state: AppState, item: Item) {
     return isRoot(item);
@@ -45,31 +47,4 @@ const getFollowingItem = (item: Item): Item | undefined => {
         }
         if (parent) return getFollowingSibling(parent);
     }
-};
-
-const getFollowingSibling = (item: Item): Item | undefined =>
-    getRelativeSibling(item, (currentIndex) => currentIndex + 1);
-
-const getPreviousSibling = (item: Item): Item | undefined =>
-    getRelativeSibling(item, (currentIndex) => currentIndex - 1);
-
-const getRelativeSibling = (
-    item: Item,
-    getNextItemIndex: (itemIndex: number) => number
-): Item | undefined => {
-    const context = item.parent?.children;
-    if (context) {
-        const index = context.indexOf(item);
-        return context[getNextItemIndex(index)];
-    }
-};
-
-const isLast = (item: Item): boolean => !getFollowingSibling(item);
-
-const getLastNestedItem = (item: Item): Item => {
-    if (item.isOpen && item.children) {
-        const { children } = item;
-        return getLastNestedItem(children[children.length - 1]);
-    }
-    return item;
 };
