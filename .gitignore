@@ -1,0 +1,7 @@
+/build
+/node_modules
+/package-lock.json
+/lib
+/ts
+/src/data.root.ts
+/.DS_Store
