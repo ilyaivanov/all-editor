@@ -4,30 +4,51 @@ import { getItemAbove, getItemBelow } from "./selection";
 
 export function handleKeyPress(e: KeyboardEvent) {
     if (state.mode == "normal") {
-        const handler = normalModeHandlers.find((h) => "Key" + h.key == e.code);
+        const handler = normalModeHandlers.find((h) => h.key == e.code);
         if (handler) handler.fn();
     } else {
         if (e.code == "Escape") state.mode = "normal";
-        else insertStr(e.key);
+        else if (e.code == "Backspace") {
+            removeCharFromLeft();
+        } else insertStr(e.key);
     }
 }
 
 const normalModeHandlers = [
-    { key: "A", fn: moveCursorLeft },
-    { key: "F", fn: moveCursorRight },
-    { key: "W", fn: goToNextWord },
-    { key: "B", fn: goToPrevWord },
-    { key: "J", fn: goDown },
-    { key: "K", fn: goUp },
-    { key: "H", fn: goLeft },
-    { key: "L", fn: goRight },
-    { key: "I", fn: () => (state.mode = "insert") },
+    { key: "KeyA", fn: moveCursorLeft },
+    { key: "KeyF", fn: moveCursorRight },
+    { key: "KeyW", fn: goToNextWord },
+    { key: "KeyB", fn: goToPrevWord },
+    { key: "KeyJ", fn: goDown },
+    { key: "KeyK", fn: goUp },
+    { key: "KeyH", fn: goLeft },
+    { key: "KeyL", fn: goRight },
+    { key: "KeyI", fn: () => (state.mode = "insert") },
+    { key: "Backspace", fn: removeCharFromLeft },
+    { key: "KeyX", fn: removeCurrentChar },
 ];
 
 function changeSelected(item: Item | undefined) {
     if (item) {
         state.selectedItem = item;
         state.position = 0;
+    }
+}
+
+function removeCharFromLeft() {
+    state.selectedItem.title = removeChar(
+        state.selectedItem.title,
+        state.position - 1
+    );
+    state.position--;
+}
+
+function removeCurrentChar() {
+    if (state.position < state.selectedItem.title.length) {
+        state.selectedItem.title = removeChar(
+            state.selectedItem.title,
+            state.position
+        );
     }
 }
 
@@ -72,6 +93,10 @@ function goUp() {
 function insertStrAt(str: string, ch: string, at: number) {
     return str.slice(0, at) + ch + str.slice(at);
 }
+function removeChar(str: string, at: number) {
+    return str.slice(0, at) + str.slice(at + 1);
+}
+
 function insertStr(str: string) {
     const { selectedItem, position } = state;
     selectedItem.title = insertStrAt(selectedItem.title, str, position);
