@@ -6,6 +6,7 @@ import {
     getItemToSelectAfterRemovingSelected,
 } from "./selection";
 import { editTree, redoLastChange, undoLastChange } from "./undoRedo";
+import { moveSelectedItem } from "./movement";
 
 export function handleKeyPress(e: KeyboardEvent) {
     if (e.metaKey && e.code == "KeyR") return;
@@ -15,7 +16,8 @@ export function handleKeyPress(e: KeyboardEvent) {
             (h) =>
                 h.key == e.code &&
                 !!h.shift == !!e.shiftKey &&
-                !!h.ctrl == !!e.ctrlKey
+                !!h.ctrl == !!e.ctrlKey &&
+                !!h.alt == !!e.altKey
         );
         if (handler) handler.fn();
     } else {
@@ -58,6 +60,11 @@ const normalModeHandlers = [
     { key: "KeyD", fn: removeSelectedItem },
     { key: "KeyU", fn: () => undoLastChange(state) },
     { key: "KeyU", fn: () => redoLastChange(state), shift: true },
+
+    { key: "KeyJ", fn: () => moveSelectedItem(state, "down"), alt: true },
+    { key: "KeyK", fn: () => moveSelectedItem(state, "up"), alt: true },
+    { key: "KeyL", fn: () => moveSelectedItem(state, "right"), alt: true },
+    { key: "KeyH", fn: () => moveSelectedItem(state, "left"), alt: true },
 ];
 
 function enterInsertMode() {

@@ -13,12 +13,23 @@ Plan
 
 Core parts
  - Undo / Redo - I can just remove by accident something
+ - Movement
  - Serialize into local-storage and files
  - Search? 
  - Focus? 
- - Movement
+
+
+Cross cutting
+ - Undo/redo
+ - Selection history?
+ - Animations
 
 Timeline
  18.12
     ✔ Tree-like structure with nested items. 
     ✔ Navigate around items, jump words, close items
+    ✔ Start writing undo/redo with tests
+ 19.12
+    ✔ Finish e2e tests for add/remove/rename
+    ✔ Undo/redo for add/remove/rename
+    - Movement vertical and horizontal

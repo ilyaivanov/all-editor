@@ -74,6 +74,7 @@ function performChange(state: AppState, edit: Edit) {
         const move = edit.item;
         removeItem(move.item);
         addItemAt(move.newParent, move.item, move.newPosition);
+        changeSelected(move.item);
     }
 }
 
@@ -98,6 +99,7 @@ function revertChange(state: AppState, edit: Edit) {
         const move = edit.item;
         removeItem(move.item);
         addItemAt(move.oldParent, move.item, move.oldPosition);
+        changeSelected(move.item);
     }
 }
 

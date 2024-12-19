@@ -29,10 +29,12 @@ export function checkMode(mode: Mode) {
 }
 
 export function checkRootItems(titles: string[]) {
-    if (titles.length != state.root.children.length)
+    if (titles.length != state.root.children.length) {
         console.trace(
             `Expected root items to be ${titles.length}, but was ${state.root.children.length}`
         );
+        return;
+    }
 
     const errors: string[] = [];
     for (let i = 0; i < titles.length; i += 1) {
@@ -47,12 +49,17 @@ export function checkRootItems(titles: string[]) {
 
 export async function pressKey(
     letter: string,
-    options?: { delay?: number; shift?: boolean }
+    options?: { delay?: number; shift?: boolean; alt?: boolean }
 ) {
     await sleep(options?.delay);
     const fullKeys = ["Escape"];
     const code = fullKeys.includes(letter) ? letter : "Key" + letter;
-    handleKeyPress({ code, key: letter, shiftKey: options?.shift } as any);
+    handleKeyPress({
+        code,
+        key: letter,
+        shiftKey: options?.shift,
+        altKey: options?.alt,
+    } as any);
     render();
 }
 
@@ -67,3 +74,34 @@ export async function enterTextAndExit(text: string) {
     await enterText(text);
     await pressKey("Escape");
 }
+
+export const actions = {
+    moveUp: async (delay?: number) => pressKey("K", { alt: true, delay }),
+    moveDown: async (delay?: number) => pressKey("J", { alt: true, delay }),
+    moveRight: async (delay?: number) => pressKey("L", { alt: true, delay }),
+    moveLeft: async (delay?: number) => pressKey("H", { alt: true, delay }),
+    undo: async () => pressKey("U"),
+    redo: async () => pressKey("U", { shift: true }),
+    selectBelow: async () => pressKey("J"),
+    selectAbove: async () => pressKey("K"),
+};
+
+export const expect = {
+    isTrue: function isTrue(val: boolean, msg?: string) {
+        if (!val) console.trace(msg);
+    },
+    arrayEqual: function arrayEqual<T>(a: T[], b: T[]) {
+        if (a.length !== b.length) {
+            return `Array lengths differ: expected ${b.length}, received ${a.length}`;
+        }
+
+        let res = "";
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] != b[i]) {
+                res += `${i}. ${a[i]} expected ${b[i]}\n`;
+            }
+        }
+
+        if (res.length > 0) console.trace(res);
+    },
+};

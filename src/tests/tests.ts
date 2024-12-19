@@ -1,3 +1,4 @@
+import { runMovementTests } from "./movement";
 import { testUndoRedo } from "./undo";
 import {
     checkMode,
@@ -9,10 +10,11 @@ import {
 } from "./utils";
 
 export const TEXT_SPEED = 20;
-export const SLEEP = 40;
+export const SLEEP = 30;
 // export const SLEEP = 200;
 
 export async function runTests() {
+    await runMovementTests();
     await testEmptyState();
     await testMovement();
     await testEdit();
