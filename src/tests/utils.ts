@@ -84,11 +84,29 @@ export const actions = {
     redo: async () => pressKey("U", { shift: true }),
     selectBelow: async () => pressKey("J"),
     selectAbove: async () => pressKey("K"),
+
+    moveCursorLeft: async () => pressKey("A"),
+    moveCursorRight: async () => pressKey("F"),
+
+    jumpWordForward: async () => pressKey("W"),
+    jumpWordBack: async () => pressKey("B"),
 };
 
 export const expect = {
     isTrue: function isTrue(val: boolean, msg?: string) {
         if (!val) console.trace(msg);
+    },
+    selectedItem: function expectSelectedItem(title: string) {
+        if (state.selectedItem.title != title)
+            console.trace(
+                `Expect selected item ${title}, but was ${state.selectedItem.title}`
+            );
+    },
+    cursorPosition: function expectCursorPosition(pos: number) {
+        if (state.position != pos)
+            console.trace(
+                `Expect cursor position at ${pos}, but was ${state.position}`
+            );
     },
     arrayEqual: function arrayEqual<T>(a: T[], b: T[]) {
         let res = "";

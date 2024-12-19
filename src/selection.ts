@@ -6,7 +6,6 @@ import {
     isRoot,
     type Item,
 } from "./tree/tree";
-// import { Item, isRoot } from "./utils/tree";
 
 function isFocused(state: AppState, item: Item) {
     return isRoot(item);

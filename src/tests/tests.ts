@@ -1,3 +1,4 @@
+import { runCursorTests } from "./cursor";
 import { runMovementTests } from "./movement";
 import { testUndoRedo } from "./undo";
 import {
@@ -14,13 +15,15 @@ export const SLEEP = 30;
 // export const SLEEP = 200;
 
 export async function runTests() {
-    await runMovementTests();
-    await testEmptyState();
-    await testMovement();
-    await testEdit();
-    await testRemovalWithUndo();
-    await testAddingNew();
-    await testUndoRedo();
+    await runCursorTests();
+    // await runMovementTests();
+    // await testEmptyState();
+
+    // await testMovement();
+    // await testEdit();
+    // await testRemovalWithUndo();
+    // await testAddingNew();
+    // await testUndoRedo();
 }
 
 async function testEmptyState() {

@@ -108,6 +108,7 @@ function addItemBelow() {
     state.isItemAddedBeforeInsertMode = true;
     state.mode = "insert";
 }
+
 function addItemAbove() {
     const context = state.selectedItem.parent.children;
     const index = context.indexOf(state.selectedItem);
@@ -118,6 +119,7 @@ function addItemAbove() {
     state.isItemAddedBeforeInsertMode = true;
     state.mode = "insert";
 }
+
 function addItemInside() {
     state.selectedItem.isOpen = true;
     const newItem = item("");
@@ -153,17 +155,25 @@ function removeCurrentChar() {
 }
 
 function moveCursorLeft() {
-    state.position--;
-    if (state.position < 0) {
+    if (state.position > 0) {
+        state.position--;
+    } else {
+        const itemBefore = state.selectedItem;
         goUp();
-        state.position = state.selectedItem.title.length;
+        if (itemBefore != state.selectedItem)
+            state.position = state.selectedItem.title.length;
     }
 }
 
 function moveCursorRight() {
-    state.position++;
-    if (state.position > state.selectedItem.title.length) {
-        goDown();
+    if (state.position <= state.selectedItem.title.length) {
+        state.position++;
+        if (state.position > state.selectedItem.title.length) {
+            const itemBefore = state.selectedItem;
+            goDown();
+            if (itemBefore != state.selectedItem) state.position = 0;
+            else state.position = state.selectedItem.title.length;
+        }
     }
 }
 
