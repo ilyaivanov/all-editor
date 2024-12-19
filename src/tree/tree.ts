@@ -65,3 +65,14 @@ export function addItemAt(parent: Item, child: Item, index: number) {
     //TODO: should tree open the item? Or is it a UI thing/
     parent.isOpen = true;
 }
+
+export function findItem(root: Item, predicate: (item: Item) => boolean) {
+    const stack = [...root.children];
+    while (stack.length > 0) {
+        const item = stack.pop()!;
+
+        if (predicate(item)) return item;
+
+        if (item.children.length > 0) stack.push(...item.children);
+    }
+}

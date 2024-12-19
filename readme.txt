@@ -32,4 +32,4 @@ Timeline
  19.12
     ✔ Finish e2e tests for add/remove/rename
     ✔ Undo/redo for add/remove/rename
-    - Movement vertical and horizontal
+    ✔ Movement vertical and horizontal

@@ -9,6 +9,7 @@ import {
 } from "./utils";
 
 export async function runMovementTests() {
+    await movingManyItemsInside();
     await runMovementTestsWithUndo();
     await movesWhichDoNotAffectOrderAreNotPlacedInHistory();
     await movingItemRightPlacedItAsFirstChildOfPreviousItem();
@@ -97,17 +98,11 @@ async function movingItemRightPlacedItAsFirstChildOfPreviousItem() {
     expect.isTrue(oneItem.isOpen);
     checkRootItems(["One"]);
 
-    expect.arrayEqual(
-        state.root.children[0].children.map((i) => i.title),
-        ["Two"]
-    );
+    expect.children("One", ["Two"]);
 
     await actions.moveRight();
 
-    expect.arrayEqual(
-        state.root.children[0].children.map((i) => i.title),
-        ["Two"]
-    );
+    expect.children("One", ["Two"]);
 
     await actions.moveLeft();
     expect.isTrue(!oneItem.isOpen);
@@ -120,13 +115,38 @@ async function movingItemRightPlacedItAsFirstChildOfPreviousItem() {
     await actions.undo();
 
     checkRootItems(["One"]);
-    expect.arrayEqual(
-        state.root.children[0].children.map((i) => i.title),
-        ["Two"]
-    );
-
+    expect.children("One", ["Two"]);
     await actions.undo();
 
     checkRootItems(["One", "Two"]);
     checkSelected("Two");
+}
+
+async function movingManyItemsInside() {
+    init("One Two Three".split(" "));
+
+    await actions.selectBelow();
+    await actions.moveRight();
+    await actions.selectBelow();
+    await actions.moveRight();
+
+    expect.children("One", ["Two", "Three"]);
+
+    await actions.moveRight();
+    expect.children("One", ["Two"]);
+    expect.children("Two", ["Three"]);
+
+    await actions.moveRight();
+    expect.children("One", ["Two"]);
+    expect.children("Two", ["Three"]);
+
+    await actions.moveLeft();
+    expect.children("One", ["Two", "Three"]);
+
+    await actions.undo();
+    expect.children("One", ["Two"]);
+    expect.children("Two", ["Three"]);
+
+    await actions.undo();
+    expect.children("One", ["Two", "Three"]);
 }

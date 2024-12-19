@@ -26,19 +26,22 @@ export function moveSelectedItem(
     else if (direction == "down")
         info.newPosition = Math.min(info.oldPosition + 1, context.length - 1);
     else if (direction == "right") {
-        info.newParent = getPreviousSibling(item)!;
-        info.newPosition = 0;
+        const prev = getPreviousSibling(item);
+        if (!prev) return;
+
+        info.newParent = prev;
+        info.newPosition = info.newParent.children.length;
     } else if (direction == "left") {
-        if (!isRoot(item.parent)) {
-            info.newParent = item.parent.parent;
-            info.newPosition =
-                item.parent.parent.children.indexOf(item.parent) + 1;
-        } else {
-            return;
-        }
+        if (isRoot(item.parent)) return;
+
+        info.newParent = item.parent.parent;
+        info.newPosition = item.parent.parent.children.indexOf(item.parent) + 1;
     }
 
-    if (info.newPosition != info.oldPosition)
+    if (
+        info.newPosition != info.oldPosition ||
+        info.oldParent != info.newParent
+    )
         editTree(state, { type: "move", item: info });
     // I don't want to move an item if parent is selected. Maybe I will change that
     // items = items.filter((c) => {

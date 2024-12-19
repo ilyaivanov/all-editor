@@ -1,6 +1,6 @@
 import { Mode, render, state } from "..";
 import { changeSelected, handleKeyPress } from "../actions";
-import { item } from "../tree/tree";
+import { findItem, item } from "../tree/tree";
 import { SLEEP, TEXT_SPEED } from "./tests";
 
 export function init(items: string[]) {
@@ -91,17 +91,29 @@ export const expect = {
         if (!val) console.trace(msg);
     },
     arrayEqual: function arrayEqual<T>(a: T[], b: T[]) {
-        if (a.length !== b.length) {
-            return `Array lengths differ: expected ${b.length}, received ${a.length}`;
-        }
-
         let res = "";
-        for (let i = 0; i < a.length; i++) {
-            if (a[i] != b[i]) {
-                res += `${i}. ${a[i]} expected ${b[i]}\n`;
+        if (a.length !== b.length) {
+            res = `Array lengths differ: expected ${b.length}, received ${a.length}`;
+        } else {
+            for (let i = 0; i < a.length; i++) {
+                if (a[i] != b[i]) {
+                    res += `${i}. ${a[i]} expected ${b[i]}\n`;
+                }
             }
         }
 
         if (res.length > 0) console.trace(res);
+    },
+
+    children: function expectChildren(title: string, children: string[]) {
+        const item = findItem(state.root, (i) => i.title == title);
+        if (!item) {
+            console.trace(`Can't find '${title}'`);
+        } else {
+            expect.arrayEqual(
+                item.children.map((i) => i.title),
+                children
+            );
+        }
     },
 };
