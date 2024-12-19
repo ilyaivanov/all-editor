@@ -5,6 +5,7 @@ import {
     getItemBelow,
     getItemToSelectAfterRemovingSelected,
 } from "./selection";
+import { editTree, redoLastChange, undoLastChange } from "./undoRedo";
 
 export function handleKeyPress(e: KeyboardEvent) {
     if (e.metaKey && e.code == "KeyR") return;
@@ -13,15 +14,28 @@ export function handleKeyPress(e: KeyboardEvent) {
         const handler = normalModeHandlers.find(
             (h) =>
                 h.key == e.code &&
-                !!h.shift === e.shiftKey &&
-                !!h.ctrl == e.ctrlKey
+                !!h.shift == !!e.shiftKey &&
+                !!h.ctrl == !!e.ctrlKey
         );
         if (handler) handler.fn();
     } else {
-        if (e.code == "Escape") state.mode = "normal";
-        else if (e.code == "Backspace") {
+        if (e.code == "Escape") {
+            if (state.isItemAddedBeforeInsertMode) {
+                state.isItemAddedBeforeInsertMode = false;
+            } else {
+                editTree(state, {
+                    type: "rename",
+                    item: {
+                        item: state.selectedItem,
+                        newTitle: state.selectedItem.title,
+                        oldTitle: state.selectedItemTitleBeforeInsertMode,
+                    },
+                });
+            }
+            state.mode = "normal";
+        } else if (e.code == "Backspace") {
             removeCharFromLeft();
-        } else insertStr(e.key);
+        } else if (e.key.length == 1) insertStr(e.key);
     }
 }
 
@@ -34,7 +48,7 @@ const normalModeHandlers = [
     { key: "KeyK", fn: goUp },
     { key: "KeyH", fn: goLeft },
     { key: "KeyL", fn: goRight },
-    { key: "KeyI", fn: () => (state.mode = "insert") },
+    { key: "KeyI", fn: enterInsertMode },
     { key: "Backspace", fn: removeCharFromLeft },
     { key: "KeyX", fn: removeCurrentChar },
     { key: "KeyO", fn: addItemBelow },
@@ -42,28 +56,49 @@ const normalModeHandlers = [
     { key: "KeyO", fn: addItemInside, ctrl: true },
     { key: "KeyR", fn: replaceTitle },
     { key: "KeyD", fn: removeSelectedItem },
+    { key: "KeyU", fn: () => undoLastChange(state) },
+    { key: "KeyU", fn: () => redoLastChange(state), shift: true },
 ];
 
+function enterInsertMode() {
+    state.selectedItemTitleBeforeInsertMode = state.selectedItem.title;
+    state.mode = "insert";
+}
+
 function replaceTitle() {
+    state.selectedItemTitleBeforeInsertMode = state.selectedItem.title;
     state.selectedItem.title = "";
     state.mode = "insert";
 }
 
 function removeSelectedItem() {
-    const next = getItemToSelectAfterRemovingSelected(state.selectedItem);
     const context = state.selectedItem.parent.children;
-    context.splice(context.indexOf(state.selectedItem), 1);
-
-    if (next) state.selectedItem = next;
+    const index = context.indexOf(state.selectedItem);
+    const itemToSelectNext = getItemToSelectAfterRemovingSelected(
+        state.selectedItem
+    );
+    editTree(state, {
+        type: "remove",
+        item: { item: state.selectedItem, position: index },
+        itemToSelectNext,
+    });
 }
 
 function addItemBelow() {
     const context = state.selectedItem.parent.children;
     const index = context.indexOf(state.selectedItem);
     const newItem = item("");
-    newItem.parent = state.selectedItem.parent;
-    context.splice(index + 1, 0, newItem);
+    editTree(state, {
+        type: "add",
+        item: {
+            item: newItem,
+            parent: state.selectedItem.parent,
+            position: index + 1,
+            selectedAtMoment: state.selectedItem,
+        },
+    });
     changeSelected(newItem);
+    state.isItemAddedBeforeInsertMode = true;
     state.mode = "insert";
 }
 function addItemAbove() {
@@ -73,6 +108,7 @@ function addItemAbove() {
     newItem.parent = state.selectedItem.parent;
     context.splice(index, 0, newItem);
     changeSelected(newItem);
+    state.isItemAddedBeforeInsertMode = true;
     state.mode = "insert";
 }
 function addItemInside() {
@@ -81,10 +117,11 @@ function addItemInside() {
     state.selectedItem.children.unshift(newItem);
     newItem.parent = state.selectedItem;
     changeSelected(newItem);
+    state.isItemAddedBeforeInsertMode = true;
     state.mode = "insert";
 }
 
-function changeSelected(item: Item | undefined) {
+export function changeSelected(item: Item | undefined) {
     if (item) {
         state.selectedItem = item;
         state.position = 0;

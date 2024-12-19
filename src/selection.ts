@@ -45,6 +45,6 @@ const getFollowingItem = (item: Item): Item | undefined => {
         while (parent && isLast(parent)) {
             parent = parent.parent;
         }
-        if (parent) return getFollowingSibling(parent);
+        if (parent && !isRoot(parent)) return getFollowingSibling(parent);
     }
 };

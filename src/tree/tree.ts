@@ -17,16 +17,7 @@ export function item(title: string, children: Item[] = []): Item {
     return res;
 }
 
-export let data: Item = item("Root", [
-    item("One", [
-        item("One 1", [item("One 1.1"), item("One 1.2"), item("One 1.3")]),
-        item("One 2"),
-        item("One 3"),
-    ]),
-    item("Two"),
-    item("Three"),
-    item("Four"),
-]);
+export let data: Item = item("Root", [item("One"), item("Two"), item("Three")]);
 
 export function isRoot(item: Item) {
     return item.parent == item;
@@ -58,3 +49,19 @@ export const getLastNestedItem = (item: Item): Item => {
     }
     return item;
 };
+
+export function removeItem(item: Item) {
+    if (item.parent) {
+        const context = item.parent.children;
+        context.splice(context.indexOf(item), 1);
+        if (item.parent.children.length == 0) item.parent.isOpen = false;
+    }
+}
+
+export function addItemAt(parent: Item, child: Item, index: number) {
+    parent.children.splice(index, 0, child);
+    child.parent = parent;
+
+    //TODO: should tree open the item? Or is it a UI thing/
+    parent.isOpen = true;
+}
