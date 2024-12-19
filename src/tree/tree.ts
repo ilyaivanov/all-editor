@@ -1,3 +1,5 @@
+import { sample } from "./data.root";
+
 export type Item = {
     parent: Item;
     title: string;
@@ -17,7 +19,12 @@ export function item(title: string, children: Item[] = []): Item {
     return res;
 }
 
-export let data: Item = item("Root", [item("One"), item("Two"), item("Three")]);
+export let data: Item = sample;
+
+// export let data: Item =  item(
+//     "Root",
+//     Array.from(new Array(10)).map((_, i) => item("Item " + (i + 1)))
+// );
 
 export function isRoot(item: Item) {
     return item.parent == item;

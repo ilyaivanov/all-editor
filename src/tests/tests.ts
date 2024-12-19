@@ -16,14 +16,15 @@ export const SLEEP = 30;
 
 export async function runTests() {
     await runCursorTests();
-    // await runMovementTests();
-    // await testEmptyState();
 
-    // await testMovement();
-    // await testEdit();
-    // await testRemovalWithUndo();
-    // await testAddingNew();
-    // await testUndoRedo();
+    await runMovementTests();
+    await testEmptyState();
+
+    await testMovement();
+    await testEdit();
+    await testRemovalWithUndo();
+    await testAddingNew();
+    await testUndoRedo();
 }
 
 async function testEmptyState() {

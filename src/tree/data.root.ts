@@ -1,6 +1,6 @@
 import { Item, item } from "./tree";
 
-export let data: Item = item("Root", [
+export let sample: Item = item("Root", [
     item("Cure Music", [
         item("Night Spirits: Chillout for Night Owls"),
         item("The Psychedelic Muse: The Best Chillout of 2023", [

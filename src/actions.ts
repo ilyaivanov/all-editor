@@ -7,6 +7,7 @@ import {
 } from "./selection";
 import { editTree, redoLastChange, undoLastChange } from "./undoRedo";
 import { moveSelectedItem } from "./movement";
+import { clampOffset } from "./scroll";
 
 export function handleKeyPress(e: KeyboardEvent) {
     if (e.metaKey && e.code == "KeyR") return;
@@ -39,6 +40,10 @@ export function handleKeyPress(e: KeyboardEvent) {
             removeCharFromLeft();
         } else if (e.key.length == 1) insertStr(e.key);
     }
+}
+
+export function onWheel(e: WheelEvent) {
+    state.scrollOffset = clampOffset(state.scrollOffset + e.deltaY);
 }
 
 const normalModeHandlers = [

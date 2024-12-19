@@ -1,9 +1,10 @@
-import { handleKeyPress } from "./actions";
-import { onResize } from "./canvas";
+import { handleKeyPress, onWheel } from "./actions";
+import { onResize } from "./utils/canvas";
 import { runTests } from "./tests/tests";
-import { data } from "./tree/tree";
+import { data, Item } from "./tree/tree";
 import { Edit } from "./undoRedo";
-import { show } from "./view";
+import { buildViews, show, View } from "./view";
+import { scrollToSelectedItem } from "./scroll";
 
 onResize();
 
@@ -24,17 +25,33 @@ export const state = {
     isItemAddedBeforeInsertMode: false,
     changeHistory: [] as Edit[],
     currentChange: -1,
+
+    views: [] as View[],
+
+    pageHeight: 0,
+    scrollOffset: 0,
 };
 
 export type V2 = { x: number; y: number };
 export type AppState = typeof state;
 
 export function render() {
+    buildViews(state);
     show(state);
 }
 
 window.addEventListener("keydown", (e) => {
+    const selectedItemBefore = state.selectedItem;
     handleKeyPress(e);
+    buildViews(state);
+
+    if (selectedItemBefore != state.selectedItem) scrollToSelectedItem(state);
+
+    show(state);
+});
+
+window.addEventListener("wheel", (e) => {
+    onWheel(e);
     render();
 });
 

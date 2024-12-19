@@ -1,8 +1,8 @@
 import { init, expect, actions } from "./utils";
 
 export async function runCursorTests() {
-    // testCursorMovementLeftRight();
-    jumpWordsBackAndForth();
+    await testCursorMovementLeftRight();
+    await jumpWordsBackAndForth();
 }
 
 async function testCursorMovementLeftRight() {
