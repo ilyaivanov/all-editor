@@ -6,8 +6,7 @@
     "scripts": {
         "start": "webpack serve --mode development",
         "build": "rm -rf build && webpack --mode production",
-        "deploy": "npm run build && sh deploy.sh",
-        "import-ts": "ts-node scripts/importTypescript.ts"
+        "deploy": "npm run build && sh deploy.sh"
     },
     "author": "",
     "license": "ISC",
