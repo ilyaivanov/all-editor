@@ -1,4 +1,4 @@
-import { render } from "..";
+import { render } from "./../index";
 import { handleKeyPress } from "../actions";
 import { SLEEP, TEXT_SPEED } from "./tests";
 

@@ -1,4 +1,4 @@
-import { Mode, state } from "..";
+import { Mode, state } from "./../index";
 import { findItem, Item } from "../tree/tree";
 
 export const expect = {

@@ -1,4 +1,4 @@
-import { actions, expect, ftest, init, initWithItems, test } from "./tests";
+import { actions, expect, init, test } from "./tests";
 
 test("Emptry state always creates an item as first child of a root", async function () {
     init(["One"]);

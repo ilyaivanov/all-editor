@@ -1,4 +1,4 @@
-import { state } from ".";
+import { state } from "./index";
 import { isRoot, isSameOrParentOf, item, Item } from "./tree/tree";
 import {
     getItemAbove,

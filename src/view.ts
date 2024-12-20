@@ -1,4 +1,4 @@
-import type { AppState, V2 } from ".";
+import type { AppState, V2 } from "./index";
 import { getPathToParent, isRoot, Item } from "./tree/tree";
 import { ctx, setFont, view } from "./utils/canvas";
 import { lerp } from "./utils/math";

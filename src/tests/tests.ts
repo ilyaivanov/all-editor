@@ -1,4 +1,4 @@
-import { initialState, render, state } from "..";
+import { initialState, render, state } from "./../index";
 import { createRoot, Item, item } from "../tree/tree";
 
 const tests: TestInfo[] = [];

@@ -1,4 +1,4 @@
-import { AppState } from ".";
+import { AppState } from "./index";
 import { getPreviousSibling, isRoot, isSameOrParentOf } from "./tree/tree";
 import { editTree, Edit } from "./undoRedo";
 

@@ -1,4 +1,4 @@
-import { state } from "..";
+import { state } from "./../index";
 import { spacings, typography } from "../view";
 
 const canvas = document.createElement("canvas");

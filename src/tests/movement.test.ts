@@ -1,4 +1,4 @@
-import { state } from "..";
+import { state } from "./../index";
 import { actions, test, init, expect } from "./tests";
 
 test("If when moving nothing changes - history is not being altered", async function () {

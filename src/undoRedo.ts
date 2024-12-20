@@ -1,4 +1,4 @@
-import { AppState } from ".";
+import { AppState } from "./index";
 import { changeSelected } from "./actions";
 import { saveItemsToLocalStorage } from "./persistance.storage";
 import { addItemAt, Item, removeItem } from "./tree/tree";

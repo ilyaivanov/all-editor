@@ -1,4 +1,4 @@
-import { AppState } from ".";
+import { AppState } from "./index";
 import { Item } from "./tree/tree";
 
 const localStorageKey = "all-editor:items";

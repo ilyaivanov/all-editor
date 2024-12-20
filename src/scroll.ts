@@ -1,5 +1,4 @@
-import { AppState, state } from ".";
-import { view } from "./utils/canvas";
+import { AppState, state } from "./index";
 import { clamp } from "./utils/math";
 import { typography } from "./view";
 
