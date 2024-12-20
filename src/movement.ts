@@ -1,11 +1,13 @@
 import { AppState } from ".";
-import { getPreviousSibling, isRoot } from "./tree/tree";
+import { getPreviousSibling, isRoot, isSameOrParentOf } from "./tree/tree";
 import { editTree, MoveInfo } from "./undoRedo";
 
 export function moveSelectedItem(
     state: AppState,
     direction: "up" | "down" | "left" | "right"
 ) {
+    if (state.selectedItem == state.focused) return;
+
     const item = state.selectedItem;
     const context = item.parent.children;
     let info: MoveInfo = {
@@ -31,6 +33,8 @@ export function moveSelectedItem(
         info.newParent = item.parent.parent;
         info.newPosition = item.parent.parent.children.indexOf(item.parent) + 1;
     }
+
+    if (!isSameOrParentOf(state.focused, info.newParent)) return;
 
     if (
         info.newPosition != info.oldPosition ||

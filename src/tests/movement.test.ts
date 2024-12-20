@@ -3,8 +3,8 @@ import {
     actions,
     checkRootItems,
     checkSelected,
-    expect,
     init,
+    expect,
     pressKey,
 } from "./utils";
 
@@ -90,7 +90,7 @@ async function movingItemRightPlacedItAsFirstChildOfPreviousItem() {
 
     const oneItem = state.root.children[0];
 
-    await actions.selectBelow();
+    await actions.goDown();
 
     expect.isTrue(!oneItem.isOpen);
     await actions.moveRight();
@@ -125,9 +125,9 @@ async function movingItemRightPlacedItAsFirstChildOfPreviousItem() {
 async function movingManyItemsInside() {
     init("One Two Three".split(" "));
 
-    await actions.selectBelow();
+    await actions.goDown();
     await actions.moveRight();
-    await actions.selectBelow();
+    await actions.goDown();
     await actions.moveRight();
 
     expect.children("One", ["Two", "Three"]);

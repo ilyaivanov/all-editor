@@ -21,10 +21,31 @@ export function item(title: string, children: Item[] = []): Item {
 
 export let data: Item = sample;
 
-// export let data: Item =  item(
-//     "Root",
-//     Array.from(new Array(10)).map((_, i) => item("Item " + (i + 1)))
-// );
+// export let data: Item = item("Root", [
+//     item("Ambient", [
+//         item("Carbon Based Lifeforms", [
+//             item("album 1"),
+//             item("album 2"),
+//             item("album 3"),
+//         ]),
+//         item("Sync24", [
+//             item("album 1"),
+//             item("album 2"),
+//             item("album 3"),
+//             item("album 4"),
+//         ]),
+//         item("Koan", [
+//             item("album 1"),
+//             item("album 2"),
+//             item("album 3"),
+//             item("album 4"),
+//             item("album 5"),
+//             item("album 6"),
+//         ]),
+//     ]),
+//     item("Electro", [item("Drum"), item("And"), item("Bass")]),
+//     item("Piano", [item("David Nevue"), item("Isaac Shepard")]),
+// ]);
 
 export function isRoot(item: Item) {
     return item.parent == item;
@@ -82,4 +103,26 @@ export function findItem(root: Item, predicate: (item: Item) => boolean) {
 
         if (item.children.length > 0) stack.push(...item.children);
     }
+}
+
+export function isSameOrParentOf(parent: Item, child: Item) {
+    let runningParent = child;
+    while (!isRoot(runningParent)) {
+        if (runningParent == parent) return true;
+
+        runningParent = runningParent.parent;
+    }
+
+    if (runningParent == parent) return true;
+
+    return false;
+}
+
+export function getPathToParent(item: Item) {
+    const res = [];
+    while (!isRoot(item)) {
+        res.push(item);
+        item = item.parent;
+    }
+    return res;
 }

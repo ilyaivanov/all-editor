@@ -1,3 +1,6 @@
+import { state } from "..";
+import { spacings, typography } from "../view";
+
 const canvas = document.createElement("canvas");
 export const ctx = canvas.getContext("2d")!;
 document.body.appendChild(canvas);
@@ -19,4 +22,11 @@ export function onResize() {
     canvas.height = view.y * scale;
 
     ctx.scale(scale, scale);
+
+    //TODO this doesn't belong here
+    state.drawableCanvasHeight = view.y - spacings.footerHeight;
+}
+
+export function setFont(size: number, weight = 400) {
+    ctx.font = `${weight} ${size}px ${typography.font}`;
 }

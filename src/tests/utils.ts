@@ -1,18 +1,21 @@
-import { Mode, render, state } from "..";
+import { initialState, Mode, render, state } from "..";
 import { changeSelected, handleKeyPress } from "../actions";
-import { findItem, item } from "../tree/tree";
+import { findItem, Item, item } from "../tree/tree";
 import { SLEEP, TEXT_SPEED } from "./tests";
 
+export { expect } from "./expect";
 export function init(items: string[]) {
     const children = items.map((v) => item(v));
-    state.root = item("root", children);
-    state.changeHistory = [];
-    state.currentChange = -1;
-    state.isItemAddedBeforeInsertMode = false;
-    state.position = 0;
-    state.selectedItemTitleBeforeInsertMode = "";
+    initViaRoot(item("root", children));
+}
 
-    changeSelected(state.root.children[0]);
+export function initViaRoot(root: Item) {
+    Object.assign(state, initialState);
+
+    state.root = root;
+    state.focused = root;
+    state.selectedItem = state.root.children[0];
+
     render();
 }
 
@@ -76,62 +79,27 @@ export async function enterTextAndExit(text: string) {
 }
 
 export const actions = {
+    goLeft: async () => pressKey("H"),
+    goDown: async () => pressKey("J"),
+    goUp: async () => pressKey("K"),
+    goRight: async () => pressKey("L"),
+
     moveUp: async (delay?: number) => pressKey("K", { alt: true, delay }),
     moveDown: async (delay?: number) => pressKey("J", { alt: true, delay }),
     moveRight: async (delay?: number) => pressKey("L", { alt: true, delay }),
     moveLeft: async (delay?: number) => pressKey("H", { alt: true, delay }),
+
+    removeSelected: async () => pressKey("D"),
+
     undo: async () => pressKey("U"),
     redo: async () => pressKey("U", { shift: true }),
-    selectBelow: async () => pressKey("J"),
-    selectAbove: async () => pressKey("K"),
 
     moveCursorLeft: async () => pressKey("A"),
     moveCursorRight: async () => pressKey("F"),
 
     jumpWordForward: async () => pressKey("W"),
     jumpWordBack: async () => pressKey("B"),
-};
 
-export const expect = {
-    isTrue: function isTrue(val: boolean, msg?: string) {
-        if (!val) console.trace(msg);
-    },
-    selectedItem: function expectSelectedItem(title: string) {
-        if (state.selectedItem.title != title)
-            console.trace(
-                `Expect selected item ${title}, but was ${state.selectedItem.title}`
-            );
-    },
-    cursorPosition: function expectCursorPosition(pos: number) {
-        if (state.position != pos)
-            console.trace(
-                `Expect cursor position at ${pos}, but was ${state.position}`
-            );
-    },
-    arrayEqual: function arrayEqual<T>(a: T[], b: T[]) {
-        let res = "";
-        if (a.length !== b.length) {
-            res = `Array lengths differ: expected ${b.length}, received ${a.length}`;
-        } else {
-            for (let i = 0; i < a.length; i++) {
-                if (a[i] != b[i]) {
-                    res += `${i}. ${a[i]} expected ${b[i]}\n`;
-                }
-            }
-        }
-
-        if (res.length > 0) console.trace(res);
-    },
-
-    children: function expectChildren(title: string, children: string[]) {
-        const item = findItem(state.root, (i) => i.title == title);
-        if (!item) {
-            console.trace(`Can't find '${title}'`);
-        } else {
-            expect.arrayEqual(
-                item.children.map((i) => i.title),
-                children
-            );
-        }
-    },
+    focusOnSelected: async () => pressKey("M"),
+    focusOnParent: async () => pressKey("M", { shift: true }),
 };

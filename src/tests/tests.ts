@@ -1,6 +1,7 @@
-import { runCursorTests } from "./cursor";
-import { runMovementTests } from "./movement";
-import { testUndoRedo } from "./undo";
+import { runFocusTests } from "./focus.test";
+import { runCursorTests } from "./cursor.test";
+import { runMovementTests } from "./movement.test";
+import { testUndoRedo } from "./undo.test";
 import {
     checkMode,
     checkRootItems,
@@ -11,10 +12,11 @@ import {
 } from "./utils";
 
 export const TEXT_SPEED = 20;
-export const SLEEP = 30;
-// export const SLEEP = 200;
+export const SLEEP = 40;
+// export const SLEEP = 100;
 
 export async function runTests() {
+    await runFocusTests();
     await runCursorTests();
 
     await runMovementTests();

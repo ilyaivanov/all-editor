@@ -1,24 +1,25 @@
 import { handleKeyPress, onWheel } from "./actions";
-import { onResize } from "./utils/canvas";
+import { onResize, view } from "./utils/canvas";
 import { runTests } from "./tests/tests";
-import { data, Item } from "./tree/tree";
+import { data, item } from "./tree/tree";
 import { Edit } from "./undoRedo";
-import { buildViews, show, View } from "./view";
+import { buildViews, show, spacings, View } from "./view";
 import { scrollToSelectedItem } from "./scroll";
-
-onResize();
 
 window.addEventListener("resize", () => {
     onResize();
+
     render();
 });
 
 export type Mode = "normal" | "insert";
 
-export const state = {
+const empty = item("EMPTY_ROOT");
+export const initialState = {
     position: 0,
-    root: data,
-    selectedItem: data.children[0],
+    root: empty,
+    focused: empty,
+    selectedItem: empty,
     mode: "normal" as Mode,
 
     selectedItemTitleBeforeInsertMode: "",
@@ -29,11 +30,24 @@ export const state = {
     views: [] as View[],
 
     pageHeight: 0,
+    drawableCanvasHeight: 0,
     scrollOffset: 0,
 };
 
+export const state = {
+    ...initialState,
+    root: data,
+    focused: data,
+    selectedItem: data.children[0],
+};
+
+onResize();
+
+//@ts-expect-error
+window.state = state;
+
 export type V2 = { x: number; y: number };
-export type AppState = typeof state;
+export type AppState = typeof initialState;
 
 export function render() {
     buildViews(state);
@@ -41,11 +55,10 @@ export function render() {
 }
 
 window.addEventListener("keydown", (e) => {
-    const selectedItemBefore = state.selectedItem;
     handleKeyPress(e);
     buildViews(state);
 
-    if (selectedItemBefore != state.selectedItem) scrollToSelectedItem(state);
+    scrollToSelectedItem(state);
 
     show(state);
 });

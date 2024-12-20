@@ -1,10 +1,13 @@
 import { AppState, state } from ".";
 import { view } from "./utils/canvas";
 import { clamp } from "./utils/math";
-import { typography, View } from "./view";
+import { typography } from "./view";
 
 export function clampOffset(val: number) {
-    const maxOffset = Math.max(state.pageHeight - view.y, 0);
+    const maxOffset = Math.max(
+        state.pageHeight - state.drawableCanvasHeight,
+        0
+    );
     return clamp(val, 0, maxOffset);
 }
 
@@ -16,7 +19,7 @@ export function scrollToSelectedItem(state: AppState) {
     if (!itemView) return;
 
     const { pageHeight, scrollOffset } = state;
-    const height = view.y;
+    const height = state.drawableCanvasHeight;
 
     //TODO: this is not precise, but just some space to look forward.
     const spaceToLookAhead =

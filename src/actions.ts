@@ -1,5 +1,5 @@
 import { state } from ".";
-import { isRoot, item, Item } from "./tree/tree";
+import { isRoot, isSameOrParentOf, item, Item } from "./tree/tree";
 import {
     getItemAbove,
     getItemBelow,
@@ -70,7 +70,18 @@ const normalModeHandlers = [
     { key: "KeyK", fn: () => moveSelectedItem(state, "up"), alt: true },
     { key: "KeyL", fn: () => moveSelectedItem(state, "right"), alt: true },
     { key: "KeyH", fn: () => moveSelectedItem(state, "left"), alt: true },
+
+    { key: "KeyM", fn: focusOnSelected },
+    { key: "KeyM", fn: focusOnParent, shift: true },
 ];
+
+function focusOnSelected() {
+    state.focused = state.selectedItem;
+}
+
+function focusOnParent() {
+    state.focused = state.focused.parent;
+}
 
 function enterInsertMode() {
     state.selectedItemTitleBeforeInsertMode = state.selectedItem.title;
@@ -84,6 +95,8 @@ function replaceTitle() {
 }
 
 function removeSelectedItem() {
+    if (state.selectedItem == state.focused) return;
+
     const context = state.selectedItem.parent.children;
     const index = context.indexOf(state.selectedItem);
     const itemToSelectNext = getItemToSelectAfterRemovingSelected(
@@ -97,6 +110,8 @@ function removeSelectedItem() {
 }
 
 function addItemBelow() {
+    if (state.selectedItem == state.focused) return addItemInside();
+
     const context = state.selectedItem.parent.children;
     const index = context.indexOf(state.selectedItem);
     const newItem = item("");
@@ -115,6 +130,8 @@ function addItemBelow() {
 }
 
 function addItemAbove() {
+    if (state.selectedItem == state.focused) return addItemInside();
+
     const context = state.selectedItem.parent.children;
     const index = context.indexOf(state.selectedItem);
     const newItem = item("");
@@ -136,7 +153,7 @@ function addItemInside() {
 }
 
 export function changeSelected(item: Item | undefined) {
-    if (item) {
+    if (item && isSameOrParentOf(state.focused, item)) {
         state.selectedItem = item;
         state.position = 0;
     }
@@ -184,7 +201,8 @@ function moveCursorRight() {
 
 function goLeft() {
     const { selectedItem } = state;
-    if (selectedItem.isOpen) selectedItem.isOpen = false;
+    if (selectedItem.isOpen && state.focused != state.selectedItem)
+        selectedItem.isOpen = false;
     else if (!isRoot(selectedItem.parent)) {
         changeSelected(selectedItem.parent);
     }
