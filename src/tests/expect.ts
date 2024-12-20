@@ -26,6 +26,13 @@ export const expect = {
                 `Expected no history, but it had ${state.changeHistory.length} entrues`
             );
     },
+
+    historyCount: function expectNoHistory(count: number) {
+        if (state.changeHistory.length != count)
+            throw new Error(
+                `Expect ${count} history entiries, but got ${state.changeHistory.length}.`
+            );
+    },
     selectedItem: function expectSelectedItem(title: string) {
         if (state.selectedItem.title != title)
             console.trace(
@@ -58,6 +65,22 @@ export const expect = {
             console.trace(
                 `Expect number of views to be ${count}, but was ${state.views.length}`
             );
+    },
+
+    isOpen: function expectIsOpen(title: string) {
+        const item = findItem(state.root, (i) => i.title == title);
+        if (!item) throw new Error(`Can't find '${title}'`);
+
+        if (!item.isOpen)
+            throw new Error(`Expected '${title}' to be open, but was closed`);
+    },
+
+    isClosed: function expectIsOpen(title: string) {
+        const item = findItem(state.root, (i) => i.title == title);
+        if (!item) throw new Error(`Can't find '${title}'`);
+
+        if (item.isOpen)
+            throw new Error(`Expected '${title}' to be closed, but was open`);
     },
 
     children: function expectChildren(title: string, children: string[]) {

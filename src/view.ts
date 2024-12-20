@@ -193,14 +193,15 @@ function drawFooter(state: AppState) {
     if (path.length > 0) msg = " / " + msg;
 
     const width = ctx.measureText(msg).width;
-    ctx.fillText(msg, 20, view.y - spacings.footerHeight / 2);
-    setFont(13);
+    const footerTextLeft = 10;
+    ctx.fillText(msg, footerTextLeft, view.y - spacings.footerHeight / 2);
+
     ctx.fillStyle = colors.footerTextFocus;
 
     if (!isRoot(state.focused))
         ctx.fillText(
             state.focused.title,
-            20 + width,
+            footerTextLeft + width,
             view.y - spacings.footerHeight / 2
         );
 }

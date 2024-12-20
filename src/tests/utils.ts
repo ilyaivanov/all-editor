@@ -1,6 +1,6 @@
 import { initialState, Mode, render, state } from "..";
-import { changeSelected, handleKeyPress } from "../actions";
-import { findItem, Item, item } from "../tree/tree";
+import { handleKeyPress } from "../actions";
+import { Item, item } from "../tree/tree";
 import { SLEEP, TEXT_SPEED } from "./tests";
 
 export { expect } from "./expect";
@@ -12,6 +12,10 @@ export function init(items: string[]) {
 export function initViaRoot(root: Item) {
     Object.assign(state, initialState);
 
+    state.changeHistory = [];
+    state.views = [];
+
+    state.isRunningTests = true;
     state.root = root;
     state.focused = root;
     state.selectedItem = state.root.children[0];

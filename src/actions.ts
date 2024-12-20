@@ -27,12 +27,11 @@ export function handleKeyPress(e: KeyboardEvent) {
                 state.isItemAddedBeforeInsertMode = false;
             } else {
                 editTree(state, {
-                    type: "rename",
-                    item: {
-                        item: state.selectedItem,
-                        newTitle: state.selectedItem.title,
-                        oldTitle: state.selectedItemTitleBeforeInsertMode,
-                    },
+                    type: "change",
+                    item: state.selectedItem,
+                    prop: "title",
+                    newValue: state.selectedItem.title,
+                    oldValue: state.selectedItemTitleBeforeInsertMode,
                 });
             }
             state.mode = "normal";
@@ -201,18 +200,31 @@ function moveCursorRight() {
 
 function goLeft() {
     const { selectedItem } = state;
-    if (selectedItem.isOpen && state.focused != state.selectedItem)
-        selectedItem.isOpen = false;
-    else if (!isRoot(selectedItem.parent)) {
+    if (selectedItem.isOpen && state.focused != state.selectedItem) {
+        editTree(state, {
+            type: "change",
+            item: selectedItem,
+            prop: "isOpen",
+            newValue: false,
+            oldValue: true,
+        });
+        // selectedItem.isOpen = false;
+    } else if (!isRoot(selectedItem.parent)) {
         changeSelected(selectedItem.parent);
     }
 }
 
 function goRight() {
     const { selectedItem } = state;
-    if (!selectedItem.isOpen && selectedItem.children.length > 0)
-        selectedItem.isOpen = true;
-    else if (selectedItem.children.length > 0)
+    if (!selectedItem.isOpen && selectedItem.children.length > 0) {
+        editTree(state, {
+            type: "change",
+            item: selectedItem,
+            prop: "isOpen",
+            newValue: true,
+            oldValue: false,
+        });
+    } else if (selectedItem.children.length > 0)
         changeSelected(selectedItem.children[0]);
 }
 

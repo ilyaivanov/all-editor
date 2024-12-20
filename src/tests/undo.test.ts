@@ -1,12 +1,17 @@
+import { item } from "../tree/tree";
 import {
+    actions,
     checkRootItems,
     checkSelected,
     enterTextAndExit,
+    expect,
     init,
+    initViaRoot,
     pressKey,
 } from "./utils";
 
 export async function testUndoRedo() {
+    await openingAndClosingItemAddsThatToHistory();
     await testUndoRedoForAddRemove();
     await testUndoRedoForRename();
 }
@@ -104,4 +109,29 @@ async function testUndoRedoForRename() {
     await pressKey("U", { shift: true });
     checkRootItems(["New One", "Two and Three"]);
     checkSelected("Two and Three");
+}
+
+async function openingAndClosingItemAddsThatToHistory() {
+    initViaRoot(item("root", [item("One", [item("Two")])]));
+
+    expect.viewsCount(2);
+
+    expect.isOpen("One");
+    await actions.goLeft();
+    expect.isClosed("One");
+    expect.viewsCount(1);
+    expect.historyCount(1);
+
+    await actions.goRight();
+    expect.isOpen("One");
+    expect.viewsCount(2);
+    expect.historyCount(2);
+
+    await actions.undo();
+    expect.isClosed("One");
+    expect.viewsCount(1);
+
+    await actions.undo();
+    expect.isOpen("One");
+    expect.viewsCount(2);
 }

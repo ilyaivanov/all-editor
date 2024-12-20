@@ -16,17 +16,20 @@ export const SLEEP = 40;
 // export const SLEEP = 100;
 
 export async function runTests() {
-    await runFocusTests();
-    await runCursorTests();
-
-    await runMovementTests();
-    await testEmptyState();
-
-    await testMovement();
-    await testEdit();
-    await testRemovalWithUndo();
-    await testAddingNew();
-    await testUndoRedo();
+    try {
+        await runFocusTests();
+        await runCursorTests();
+        await runMovementTests();
+        await testEmptyState();
+        await testMovement();
+        await testEdit();
+        await testRemovalWithUndo();
+        await testAddingNew();
+        await testUndoRedo();
+    } catch (e) {
+        //I'm doing this so that red screen won't be shown only during test run
+        console.error(e);
+    }
 }
 
 async function testEmptyState() {

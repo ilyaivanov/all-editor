@@ -1,5 +1,6 @@
 import { AppState } from ".";
 import { changeSelected } from "./actions";
+import { saveItemsToLocalStorage } from "./persistance";
 import { addItemAt, Item, removeItem } from "./tree/tree";
 
 export type MoveInfo = {
@@ -17,16 +18,13 @@ export type AdditionInfo = {
     selectedAtMoment: Item;
 };
 
-export type RenameInfo = {
-    item: Item;
-    oldTitle: string;
-    newTitle: string;
-};
-
 export type Edit =
     | {
-          type: "rename";
-          item: RenameInfo;
+          type: "change";
+          item: Item;
+          prop: keyof Item;
+          oldValue: any;
+          newValue: any;
       }
     | {
           type: "remove";
@@ -64,10 +62,11 @@ function performChange(state: AppState, edit: Edit) {
         changeSelected(edit.itemToSelectNext);
     }
 
-    if (edit.type == "rename") {
-        const c = edit.item;
-        c.item.title = c.newTitle;
-        changeSelected(c.item);
+    if (edit.type == "change") {
+        const { item, prop, newValue } = edit;
+        //TS is too restrictive here
+        (item as any)[prop] = newValue;
+        changeSelected(item);
     }
 
     if (edit.type == "move") {
@@ -76,6 +75,8 @@ function performChange(state: AppState, edit: Edit) {
         addItemAt(move.newParent, move.item, move.newPosition);
         changeSelected(move.item);
     }
+
+    saveItemsToLocalStorage(state);
 }
 
 function revertChange(state: AppState, edit: Edit) {
@@ -90,10 +91,11 @@ function revertChange(state: AppState, edit: Edit) {
         addItemAt(info.item.parent, info.item, info.position);
         //TODO: waiting for multiple cursors support
         changeSelected(edit.item.item);
-    } else if (edit.type == "rename") {
-        const c = edit.item;
-        c.item.title = c.oldTitle;
-        changeSelected(c.item);
+    } else if (edit.type == "change") {
+        const { item, prop, oldValue } = edit;
+        //TS is too restrictive here
+        (item as any)[prop] = oldValue;
+        changeSelected(item);
     }
     if (edit.type == "move") {
         const move = edit.item;
@@ -101,6 +103,8 @@ function revertChange(state: AppState, edit: Edit) {
         addItemAt(move.oldParent, move.item, move.oldPosition);
         changeSelected(move.item);
     }
+
+    saveItemsToLocalStorage(state);
 }
 
 export function undoLastChange(state: AppState) {

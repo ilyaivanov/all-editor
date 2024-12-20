@@ -1,5 +1,6 @@
 import { actions, checkRootItems, expect, initViaRoot } from "./utils";
 import { item } from "../tree/tree";
+import { state } from "..";
 
 async function initFocusTests() {
     const root = item("root", [

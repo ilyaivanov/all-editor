@@ -5,6 +5,7 @@ import { data, item } from "./tree/tree";
 import { Edit } from "./undoRedo";
 import { buildViews, show, spacings, View } from "./view";
 import { scrollToSelectedItem } from "./scroll";
+import { saveItemsToLocalStorage } from "./persistance";
 
 window.addEventListener("resize", () => {
     onResize();
@@ -24,6 +25,7 @@ export const initialState = {
 
     selectedItemTitleBeforeInsertMode: "",
     isItemAddedBeforeInsertMode: false,
+    isRunningTests: false,
     changeHistory: [] as Edit[],
     currentChange: -1,
 
