@@ -1,10 +1,10 @@
 import { handleKeyPress, onWheel } from "./actions";
 import { onResize } from "./utils/canvas";
-import { runTests } from "./tests/tests";
 import { createRoot, data } from "./tree/tree";
 import { Edit } from "./undoRedo";
 import { buildViews, show, View } from "./view";
 import { scrollToSelectedItem } from "./scroll";
+import { runAllTests } from "./tests/tests";
 
 window.addEventListener("resize", () => {
     onResize();
@@ -73,7 +73,7 @@ window.addEventListener("wheel", (e) => {
 
 const url = new URL(location.toString());
 if (url.searchParams.get("test") != null) {
-    runTests();
+    runAllTests();
 } else {
     render();
 }

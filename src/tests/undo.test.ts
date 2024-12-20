@@ -1,117 +1,103 @@
+import { actions, expect, init, initWithItems, test } from "./tests";
 import { item } from "../tree/tree";
-import {
-    actions,
-    checkRootItems,
-    checkSelected,
-    enterTextAndExit,
-    expect,
-    init,
-    initWithItems,
-    pressKey,
-} from "./utils";
 
-export async function testUndoRedo() {
-    await openingAndClosingItemAddsThatToHistory();
-    await testUndoRedoForAddRemove();
-    await testUndoRedoForRename();
-}
 //TODO turn comments into code. those comments should be strings, which will drive assertions
-async function testUndoRedoForAddRemove() {
+test("Adding or removing an items can be undone", async function () {
     init("One Two Three".split(" "));
 
-    await pressKey("J");
-    await pressKey("J");
-    checkSelected("Three");
+    await actions.goDown();
+    await actions.goDown();
+    expect.selectedItem("Three");
     // One
     // Two
     // Three << selected
 
-    await pressKey("D");
-    checkSelected("Two");
+    await actions.deleteSelected();
+    expect.selectedItem("Two");
     // One
     // Two << selected (-Three)
 
-    await pressKey("D");
-    checkSelected("One");
+    await actions.deleteSelected();
+    expect.selectedItem("One");
     // One << selected (-Three -Two)
 
-    await pressKey("U");
-    checkRootItems(["One", "Two"]);
-    checkSelected("Two");
+    await actions.undo();
+    expect.rootLevelItemsToBe(["One", "Two"]);
+    expect.selectedItem("Two");
     // One
     // Two << selected (-Three | -Two)
 
-    await pressKey("O");
-    await enterTextAndExit("Four");
-    checkRootItems(["One", "Two", "Four"]);
+    await actions.createItemAfterSelected();
+    await actions.enterTextAndExit("Four");
+    expect.rootLevelItemsToBe(["One", "Two", "Four"]);
 
     // One
     // Two
     // Four << selected (-Three +Four | )
 
-    await pressKey("U");
-    checkRootItems(["One", "Two"]);
-    checkSelected("Two");
+    await actions.undo();
+    expect.rootLevelItemsToBe(["One", "Two"]);
+    expect.selectedItem("Two");
 
     // One
     // Two << selected (-Three | +Four)
 
-    await pressKey("U");
-    checkRootItems(["One", "Two", "Three"]);
-    checkSelected("Three");
+    await actions.undo();
+    expect.rootLevelItemsToBe(["One", "Two", "Three"]);
+    expect.selectedItem("Three");
     // One
     // Two
     // Three << selected (| -Three +Four)
 
-    await pressKey("U", { shift: true });
-    checkRootItems(["One", "Two"]);
-    checkSelected("Two");
+    await actions.redo();
+    expect.rootLevelItemsToBe(["One", "Two"]);
+    expect.selectedItem("Two");
     // One
     // Two << selected (-Three | +Four)
 
-    await pressKey("U", { shift: true });
-    checkRootItems(["One", "Two", "Four"]);
-    checkSelected("Four");
+    await actions.redo();
+    expect.rootLevelItemsToBe(["One", "Two", "Four"]);
+    expect.selectedItem("Four");
     // One
     // Two
     // Four << selected (-Three +Four |)
-}
+});
 
-async function testUndoRedoForRename() {
+test("Renaming an item can be undone", async function () {
     init("One Two".split(" "));
 
-    await pressKey("R");
-    await enterTextAndExit("New One");
+    await actions.replaceTitle();
+    await actions.enterTextAndExit("New One");
 
-    checkRootItems(["New One", "Two"]);
-    checkSelected("New One");
+    expect.rootLevelItemsToBe(["New One", "Two"]);
+    expect.selectedItem("New One");
 
-    await pressKey("J");
-    await pressKey("W");
-    await pressKey("I");
-    await enterTextAndExit(" and Three");
+    await actions.goDown();
+    await actions.jumpWordForward();
+    await actions.enterInsertMode();
+    await actions.enterTextAndExit(" and Three");
 
-    checkRootItems(["New One", "Two and Three"]);
-    checkSelected("Two and Three");
+    expect.rootLevelItemsToBe(["New One", "Two and Three"]);
+    expect.selectedItem("Two and Three");
 
-    await pressKey("U");
-    checkRootItems(["New One", "Two"]);
-    checkSelected("Two");
+    await actions.undo();
+    expect.rootLevelItemsToBe(["New One", "Two"]);
+    expect.selectedItem("Two");
 
-    await pressKey("U");
-    checkRootItems(["One", "Two"]);
-    checkSelected("One");
+    await actions.undo();
+    expect.rootLevelItemsToBe(["One", "Two"]);
+    expect.selectedItem("One");
 
-    await pressKey("U", { shift: true });
-    checkRootItems(["New One", "Two"]);
-    checkSelected("New One");
+    await actions.redo();
+    expect.rootLevelItemsToBe(["New One", "Two"]);
+    expect.selectedItem("New One");
 
-    await pressKey("U", { shift: true });
-    checkRootItems(["New One", "Two and Three"]);
-    checkSelected("Two and Three");
-}
+    await actions.redo();
+    expect.rootLevelItemsToBe(["New One", "Two and Three"]);
+    expect.selectedItem("Two and Three");
+});
 
-async function openingAndClosingItemAddsThatToHistory() {
+test("Opening and closing an item can be undone", async function () {
     initWithItems([item("One", [item("Two")])]);
 
     expect.viewsCount(2);
@@ -134,4 +120,4 @@ async function openingAndClosingItemAddsThatToHistory() {
     await actions.undo();
     expect.isOpen("One");
     expect.viewsCount(2);
-}
+});

@@ -1,91 +1,77 @@
 import { state } from "..";
-import {
-    actions,
-    checkRootItems,
-    checkSelected,
-    init,
-    expect,
-    pressKey,
-} from "./utils";
+import { actions, test, init, expect } from "./tests";
 
-export async function runMovementTests() {
-    await movingManyItemsInside();
-    await runMovementTestsWithUndo();
-    await movesWhichDoNotAffectOrderAreNotPlacedInHistory();
-    await movingItemRightPlacedItAsFirstChildOfPreviousItem();
-}
-
-async function movesWhichDoNotAffectOrderAreNotPlacedInHistory() {
+test("If when moving nothing changes - history is not being altered", async function () {
     init("One Two".split(" "));
 
     await actions.moveDown();
     await actions.moveDown(20);
     await actions.moveDown(20);
 
-    checkRootItems(["Two", "One"]);
+    expect.firstLevelItemsToBe(["Two", "One"]);
     await actions.undo();
-    checkRootItems(["One", "Two"]);
+    expect.firstLevelItemsToBe(["One", "Two"]);
 
     init("One Two".split(" "));
 
-    await pressKey("J");
+    await actions.goDown();
     await actions.moveUp();
     await actions.moveUp(20);
     await actions.moveUp(20);
 
-    checkRootItems(["Two", "One"]);
+    expect.firstLevelItemsToBe(["Two", "One"]);
     await actions.undo();
-    checkRootItems(["One", "Two"]);
-}
+    expect.firstLevelItemsToBe(["One", "Two"]);
+});
 
-async function runMovementTestsWithUndo() {
+test("Moving item stored that movement in history", async function () {
     init("One Two Three".split(" "));
 
     await actions.moveDown();
-    checkRootItems(["Two", "One", "Three"]);
-    checkSelected("One");
+    expect.firstLevelItemsToBe(["Two", "One", "Three"]);
+    expect.selectedItem("One");
 
     await actions.moveDown();
-    checkRootItems(["Two", "Three", "One"]);
-    checkSelected("One");
+    expect.firstLevelItemsToBe(["Two", "Three", "One"]);
+    expect.selectedItem("One");
 
     await actions.moveDown();
-    checkRootItems(["Two", "Three", "One"]);
-    checkSelected("One");
+    expect.firstLevelItemsToBe(["Two", "Three", "One"]);
+    expect.selectedItem("One");
 
     await actions.moveUp();
-    checkRootItems(["Two", "One", "Three"]);
-    checkSelected("One");
+    expect.firstLevelItemsToBe(["Two", "One", "Three"]);
+    expect.selectedItem("One");
 
     await actions.moveUp();
-    checkRootItems(["One", "Two", "Three"]);
-    checkSelected("One");
+    expect.firstLevelItemsToBe(["One", "Two", "Three"]);
+    expect.selectedItem("One");
 
     await actions.moveUp();
-    checkRootItems(["One", "Two", "Three"]);
-    checkSelected("One");
+    expect.firstLevelItemsToBe(["One", "Two", "Three"]);
+    expect.selectedItem("One");
 
-    await pressKey("J");
-    checkSelected("Two");
+    await actions.goDown();
+    expect.selectedItem("Two");
 
     await actions.undo();
-    checkRootItems(["Two", "One", "Three"]);
-    checkSelected("One");
+    expect.firstLevelItemsToBe(["Two", "One", "Three"]);
+    expect.selectedItem("One");
 
     await actions.undo();
-    checkRootItems(["Two", "Three", "One"]);
-    checkSelected("One");
+    expect.firstLevelItemsToBe(["Two", "Three", "One"]);
+    expect.selectedItem("One");
 
     await actions.redo();
-    checkRootItems(["Two", "One", "Three"]);
-    checkSelected("One");
+    expect.firstLevelItemsToBe(["Two", "One", "Three"]);
+    expect.selectedItem("One");
 
     await actions.redo();
-    checkRootItems(["One", "Two", "Three"]);
-    checkSelected("One");
-}
+    expect.firstLevelItemsToBe(["One", "Two", "Three"]);
+    expect.selectedItem("One");
+});
 
-async function movingItemRightPlacedItAsFirstChildOfPreviousItem() {
+test("Moving item right places it as a last child of previous item", async function () {
     init(["One", "Two"]);
 
     const oneItem = state.root.children[0];
@@ -96,7 +82,7 @@ async function movingItemRightPlacedItAsFirstChildOfPreviousItem() {
     await actions.moveRight();
 
     expect.isOpen("One");
-    checkRootItems(["One"]);
+    expect.firstLevelItemsToBe(["One"]);
 
     expect.children("One", ["Two"]);
 
@@ -107,22 +93,22 @@ async function movingItemRightPlacedItAsFirstChildOfPreviousItem() {
     await actions.moveLeft();
     expect.isClosed("One");
     expect.isTrue(oneItem.children.length == 0);
-    checkRootItems(["One", "Two"]);
+    expect.firstLevelItemsToBe(["One", "Two"]);
 
     await actions.moveLeft();
-    checkRootItems(["One", "Two"]);
+    expect.firstLevelItemsToBe(["One", "Two"]);
 
     await actions.undo();
 
-    checkRootItems(["One"]);
+    expect.firstLevelItemsToBe(["One"]);
     expect.children("One", ["Two"]);
     await actions.undo();
 
-    checkRootItems(["One", "Two"]);
-    checkSelected("Two");
-}
+    expect.firstLevelItemsToBe(["One", "Two"]);
+    expect.selectedItem("Two");
+});
 
-async function movingManyItemsInside() {
+test("Moving items inside one another", async function () {
     init("One Two Three".split(" "));
 
     await actions.goDown();
@@ -149,4 +135,4 @@ async function movingManyItemsInside() {
 
     await actions.undo();
     expect.children("One", ["Two", "Three"]);
-}
+});

@@ -1,4 +1,4 @@
-import { actions, checkRootItems, expect, initWithItems } from "./utils";
+import { actions, test, initWithItems, expect } from "./tests";
 import { item } from "../tree/tree";
 
 async function initFocusTests() {
@@ -25,14 +25,7 @@ async function initWithFocusOnTwo() {
     await actions.focusOnSelected();
 }
 
-export async function runFocusTests() {
-    await focusedItemCantBeRemovedOrMoved();
-    await whenClosingItemAndThenFocusingOnItAllChildrenareShown();
-    await itemOutsideFocusCantBeSelected();
-    await itemMovementIsLimitedToFocus();
-}
-
-async function whenClosingItemAndThenFocusingOnItAllChildrenareShown() {
+test("When closing an item and then focusing on it all children are shown", async function () {
     initFocusTests();
 
     await actions.goDown();
@@ -44,9 +37,9 @@ async function whenClosingItemAndThenFocusingOnItAllChildrenareShown() {
 
     await actions.focusOnParent();
     expect.viewsCount(3);
-}
+});
 
-async function itemMovementIsLimitedToFocus() {
+test("When moving item outside of focused - nothing happens", async function () {
     await initWithFocusOnTwo();
 
     await actions.goDown();
@@ -57,9 +50,9 @@ async function itemMovementIsLimitedToFocus() {
 
     expect.noHistory();
     expect.children("Two", ["Two 1", "Two 2"]);
-}
+});
 
-async function itemOutsideFocusCantBeSelected() {
+test("When selecting item outside of focus - nothing happens", async function () {
     await initWithFocusOnTwo();
     await actions.goUp();
     await actions.goUp();
@@ -72,19 +65,19 @@ async function itemOutsideFocusCantBeSelected() {
 
     await actions.goDown();
     expect.selectedItem("Two 2");
-}
+});
 
-async function focusedItemCantBeRemovedOrMoved() {
+test("Item focused can't be removed nor moved", async function () {
     await initWithFocusOnTwo();
 
     await actions.moveDown();
-    checkRootItems(["One", "Two", "Three"]);
+    expect.rootLevelItemsToBe(["One", "Two", "Three"]);
     expect.noHistory();
 
     await initWithFocusOnTwo();
 
     await actions.removeSelected();
-    checkRootItems(["One", "Two", "Three"]);
+    expect.rootLevelItemsToBe(["One", "Two", "Three"]);
     expect.noHistory();
 
     await initWithFocusOnTwo();
@@ -93,4 +86,4 @@ async function focusedItemCantBeRemovedOrMoved() {
 
     await actions.goLeft();
     expect.isOpen("Two");
-}
+});

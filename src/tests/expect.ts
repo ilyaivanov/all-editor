@@ -1,4 +1,4 @@
-import { state } from "..";
+import { Mode, state } from "..";
 import { findItem, Item } from "../tree/tree";
 
 export const expect = {
@@ -18,6 +18,19 @@ export const expect = {
             const m = typeof msg == "string" ? msg : msg(item);
             throw new Error(m);
         }
+    },
+
+    firstLevelItemsToBe(titles: string[]) {
+        expect.arrayEqual(
+            state.focused.children.map((i) => i.title),
+            titles
+        );
+    },
+    rootLevelItemsToBe(titles: string[]) {
+        expect.arrayEqual(
+            state.root.children.map((i) => i.title),
+            titles
+        );
     },
 
     noHistory: function expectNoHistory() {
@@ -93,5 +106,10 @@ export const expect = {
                 children
             );
         }
+    },
+
+    mode: function checkMode(mode: Mode) {
+        if (state.mode != mode)
+            console.trace(`Expected mode '${mode}'. But was '${state.mode}'`);
     },
 };

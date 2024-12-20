@@ -1,11 +1,6 @@
-import { init, expect, actions } from "./utils";
+import { actions, test, init, expect } from "./tests";
 
-export async function runCursorTests() {
-    await testCursorMovementLeftRight();
-    await jumpWordsBackAndForth();
-}
-
-async function testCursorMovementLeftRight() {
+test("Moving cursor left and right changes position", async function () {
     init(["One", "Two"]);
 
     expect.cursorPosition(0);
@@ -35,9 +30,9 @@ async function testCursorMovementLeftRight() {
     await actions.moveCursorRight();
     expect.selectedItem("Two");
     expect.cursorPosition(3);
-}
+});
 
-async function jumpWordsBackAndForth() {
+test("Jumping cursor by words skips non-word chars", async function () {
     const text = "Word1.Word2 Word3(Word4";
     init([text]);
 
@@ -70,4 +65,4 @@ async function jumpWordsBackAndForth() {
 
     await actions.jumpWordBack();
     expect.cursorPosition(0);
-}
+});
