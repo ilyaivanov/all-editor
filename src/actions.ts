@@ -9,6 +9,7 @@ import { editTree, redoLastChange, undoLastChange } from "./undoRedo";
 import { moveSelectedItem } from "./movement";
 import { clampOffset } from "./scroll";
 import { loadFromFile, saveToFile } from "./persistance.file";
+import { saveItemsToLocalStorage } from "./persistance.storage";
 
 export async function handleKeyPress(e: KeyboardEvent) {
     if (e.metaKey && e.code == "KeyR") return;
@@ -31,6 +32,7 @@ export async function handleKeyPress(e: KeyboardEvent) {
         if (e.code == "Escape") {
             if (state.isItemAddedBeforeInsertMode) {
                 state.isItemAddedBeforeInsertMode = false;
+                saveItemsToLocalStorage(state);
             } else {
                 editTree(state, {
                     type: "change",
