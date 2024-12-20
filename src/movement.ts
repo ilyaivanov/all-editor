@@ -1,6 +1,6 @@
 import { AppState } from ".";
 import { getPreviousSibling, isRoot, isSameOrParentOf } from "./tree/tree";
-import { editTree, MoveInfo } from "./undoRedo";
+import { editTree, Edit } from "./undoRedo";
 
 export function moveSelectedItem(
     state: AppState,
@@ -10,7 +10,8 @@ export function moveSelectedItem(
 
     const item = state.selectedItem;
     const context = item.parent.children;
-    let info: MoveInfo = {
+    let move: Edit = {
+        type: "move",
         item: item,
         newParent: item.parent,
         newPosition: -1,
@@ -18,27 +19,27 @@ export function moveSelectedItem(
         oldPosition: context.indexOf(item),
     };
 
-    if (direction == "up") info.newPosition = Math.max(info.oldPosition - 1, 0);
+    if (direction == "up") move.newPosition = Math.max(move.oldPosition - 1, 0);
     else if (direction == "down")
-        info.newPosition = Math.min(info.oldPosition + 1, context.length - 1);
+        move.newPosition = Math.min(move.oldPosition + 1, context.length - 1);
     else if (direction == "right") {
         const prev = getPreviousSibling(item);
         if (!prev) return;
 
-        info.newParent = prev;
-        info.newPosition = info.newParent.children.length;
+        move.newParent = prev;
+        move.newPosition = move.newParent.children.length;
     } else if (direction == "left") {
         if (isRoot(item.parent)) return;
 
-        info.newParent = item.parent.parent;
-        info.newPosition = item.parent.parent.children.indexOf(item.parent) + 1;
+        move.newParent = item.parent.parent;
+        move.newPosition = item.parent.parent.children.indexOf(item.parent) + 1;
     }
 
-    if (!isSameOrParentOf(state.focused, info.newParent)) return;
+    if (!isSameOrParentOf(state.focused, move.newParent)) return;
 
     if (
-        info.newPosition != info.oldPosition ||
-        info.oldParent != info.newParent
+        move.newPosition != move.oldPosition ||
+        move.oldParent != move.newParent
     )
-        editTree(state, { type: "move", item: info });
+        editTree(state, move);
 }

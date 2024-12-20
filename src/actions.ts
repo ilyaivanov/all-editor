@@ -103,7 +103,8 @@ function removeSelectedItem() {
     );
     editTree(state, {
         type: "remove",
-        item: { item: state.selectedItem, position: index },
+        item: state.selectedItem,
+        position: index,
         itemToSelectNext,
     });
 }
@@ -116,12 +117,10 @@ function addItemBelow() {
     const newItem = item("");
     editTree(state, {
         type: "add",
-        item: {
-            item: newItem,
-            parent: state.selectedItem.parent,
-            position: index + 1,
-            selectedAtMoment: state.selectedItem,
-        },
+        item: newItem,
+        parent: state.selectedItem.parent,
+        position: index + 1,
+        selectedAtMoment: state.selectedItem,
     });
     changeSelected(newItem);
     state.isItemAddedBeforeInsertMode = true;

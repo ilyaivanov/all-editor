@@ -3,21 +3,6 @@ import { changeSelected } from "./actions";
 import { saveItemsToLocalStorage } from "./persistance";
 import { addItemAt, Item, removeItem } from "./tree/tree";
 
-export type MoveInfo = {
-    item: Item;
-    oldParent: Item;
-    oldPosition: number;
-    newParent: Item;
-    newPosition: number;
-};
-
-export type AdditionInfo = {
-    item: Item;
-    parent: Item;
-    position: number;
-    selectedAtMoment: Item;
-};
-
 export type Edit =
     | {
           type: "change";
@@ -28,19 +13,24 @@ export type Edit =
       }
     | {
           type: "remove";
-          item: {
-              item: Item;
-              position: number;
-          };
+          item: Item;
+          position: number;
           itemToSelectNext: Item | undefined;
       }
     | {
           type: "add";
-          item: AdditionInfo;
+          item: Item;
+          parent: Item;
+          position: number;
+          selectedAtMoment: Item;
       }
     | {
           type: "move";
-          item: MoveInfo;
+          item: Item;
+          oldParent: Item;
+          oldPosition: number;
+          newParent: Item;
+          newPosition: number;
       };
 
 export function editTree(state: AppState, edit: Edit) {
@@ -50,15 +40,14 @@ export function editTree(state: AppState, edit: Edit) {
 
 function performChange(state: AppState, edit: Edit) {
     if (edit.type == "add") {
-        const info = edit.item;
-        addItemAt(info.parent, info.item, info.position);
+        const { item, parent, position } = edit;
+        addItemAt(parent, item, position);
 
-        changeSelected(edit.item.item);
+        changeSelected(item);
     }
 
     if (edit.type == "remove") {
-        const c = edit.item;
-        removeItem(c.item);
+        removeItem(edit.item);
         changeSelected(edit.itemToSelectNext);
     }
 
@@ -70,10 +59,10 @@ function performChange(state: AppState, edit: Edit) {
     }
 
     if (edit.type == "move") {
-        const move = edit.item;
-        removeItem(move.item);
-        addItemAt(move.newParent, move.item, move.newPosition);
-        changeSelected(move.item);
+        const { item, newParent, newPosition } = edit;
+        removeItem(item);
+        addItemAt(newParent, item, newPosition);
+        changeSelected(item);
     }
 
     saveItemsToLocalStorage(state);
@@ -81,16 +70,14 @@ function performChange(state: AppState, edit: Edit) {
 
 function revertChange(state: AppState, edit: Edit) {
     if (edit.type == "add") {
-        const info = edit.item;
-        removeItem(info.item);
-        changeSelected(edit.item.selectedAtMoment);
+        removeItem(edit.item);
+        changeSelected(edit.selectedAtMoment);
     }
     if (edit.type == "remove") {
-        const info = edit.item;
+        const { item, position } = edit;
 
-        addItemAt(info.item.parent, info.item, info.position);
-        //TODO: waiting for multiple cursors support
-        changeSelected(edit.item.item);
+        addItemAt(item.parent, item, position);
+        changeSelected(item);
     } else if (edit.type == "change") {
         const { item, prop, oldValue } = edit;
         //TS is too restrictive here
@@ -98,10 +85,10 @@ function revertChange(state: AppState, edit: Edit) {
         changeSelected(item);
     }
     if (edit.type == "move") {
-        const move = edit.item;
-        removeItem(move.item);
-        addItemAt(move.oldParent, move.item, move.oldPosition);
-        changeSelected(move.item);
+        const { item, oldParent, oldPosition } = edit;
+        removeItem(item);
+        addItemAt(oldParent, item, oldPosition);
+        changeSelected(item);
     }
 
     saveItemsToLocalStorage(state);
