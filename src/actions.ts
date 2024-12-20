@@ -8,8 +8,9 @@ import {
 import { editTree, redoLastChange, undoLastChange } from "./undoRedo";
 import { moveSelectedItem } from "./movement";
 import { clampOffset } from "./scroll";
+import { loadFromFile, saveToFile } from "./persistance.file";
 
-export function handleKeyPress(e: KeyboardEvent) {
+export async function handleKeyPress(e: KeyboardEvent) {
     if (e.metaKey && e.code == "KeyR") return;
 
     if (state.mode == "normal") {
@@ -18,9 +19,14 @@ export function handleKeyPress(e: KeyboardEvent) {
                 h.key == e.code &&
                 !!h.shift == !!e.shiftKey &&
                 !!h.ctrl == !!e.ctrlKey &&
-                !!h.alt == !!e.altKey
+                !!h.alt == !!e.altKey &&
+                !!h.meta == !!e.metaKey
         );
-        if (handler) handler.fn();
+        if (handler) {
+            if (handler.noDef) e.preventDefault();
+
+            await handler.fn();
+        }
     } else {
         if (e.code == "Escape") {
             if (state.isItemAddedBeforeInsertMode) {
@@ -72,7 +78,21 @@ const normalModeHandlers = [
 
     { key: "KeyM", fn: focusOnSelected },
     { key: "KeyM", fn: focusOnParent, shift: true },
+
+    { key: "KeyS", fn: () => saveToFile(state.root), meta: true, noDef: true },
+    { key: "KeyL", fn: loadRootFromFile, meta: true, noDef: true },
 ];
+
+async function loadRootFromFile() {
+    const fileRoot = await loadFromFile();
+    if (fileRoot) {
+        state.root = fileRoot;
+        state.selectedItem = state.root.children[0];
+        state.focused = fileRoot;
+        state.changeHistory = [];
+        state.views = [];
+    }
+}
 
 function focusOnSelected() {
     state.focused = state.selectedItem;

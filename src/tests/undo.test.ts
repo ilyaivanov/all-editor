@@ -6,7 +6,7 @@ import {
     enterTextAndExit,
     expect,
     init,
-    initViaRoot,
+    initWithItems,
     pressKey,
 } from "./utils";
 
@@ -112,7 +112,7 @@ async function testUndoRedoForRename() {
 }
 
 async function openingAndClosingItemAddsThatToHistory() {
-    initViaRoot(item("root", [item("One", [item("Two")])]));
+    initWithItems([item("One", [item("Two")])]);
 
     expect.viewsCount(2);
 

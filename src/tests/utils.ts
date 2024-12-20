@@ -1,15 +1,16 @@
 import { initialState, Mode, render, state } from "..";
 import { handleKeyPress } from "../actions";
-import { Item, item } from "../tree/tree";
+import { createRoot, Item, item } from "../tree/tree";
 import { SLEEP, TEXT_SPEED } from "./tests";
 
 export { expect } from "./expect";
 export function init(items: string[]) {
     const children = items.map((v) => item(v));
-    initViaRoot(item("root", children));
+    initWithItems(children);
 }
 
-export function initViaRoot(root: Item) {
+export function initWithItems(items: Item[]) {
+    const root = createRoot(items);
     Object.assign(state, initialState);
 
     state.changeHistory = [];

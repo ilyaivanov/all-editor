@@ -1,6 +1,6 @@
 import { AppState } from ".";
 import { changeSelected } from "./actions";
-import { saveItemsToLocalStorage } from "./persistance";
+import { saveItemsToLocalStorage } from "./persistance.storage";
 import { addItemAt, Item, removeItem } from "./tree/tree";
 
 export type Edit =

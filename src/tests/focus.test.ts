@@ -1,9 +1,8 @@
-import { actions, checkRootItems, expect, initViaRoot } from "./utils";
+import { actions, checkRootItems, expect, initWithItems } from "./utils";
 import { item } from "../tree/tree";
-import { state } from "..";
 
 async function initFocusTests() {
-    const root = item("root", [
+    const items = [
         item("One"),
         item("Two", [
             item("Two 1", [
@@ -15,8 +14,8 @@ async function initFocusTests() {
             item("Two 2"),
         ]),
         item("Three"),
-    ]);
-    initViaRoot(root);
+    ];
+    initWithItems(items);
 }
 
 async function initWithFocusOnTwo() {
@@ -90,8 +89,8 @@ async function focusedItemCantBeRemovedOrMoved() {
 
     await initWithFocusOnTwo();
 
-    expect.item("Two", (i) => i.isOpen, "Two to be open, but was closed");
+    expect.isOpen("Two");
 
     await actions.goLeft();
-    expect.item("Two", (i) => i.isOpen, "Two to be open, but was closed");
+    expect.isOpen("Two");
 }

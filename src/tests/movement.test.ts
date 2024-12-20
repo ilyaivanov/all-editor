@@ -92,10 +92,10 @@ async function movingItemRightPlacedItAsFirstChildOfPreviousItem() {
 
     await actions.goDown();
 
-    expect.isTrue(!oneItem.isOpen);
+    expect.isClosed("One");
     await actions.moveRight();
 
-    expect.isTrue(oneItem.isOpen);
+    expect.isOpen("One");
     checkRootItems(["One"]);
 
     expect.children("One", ["Two"]);
@@ -105,7 +105,7 @@ async function movingItemRightPlacedItAsFirstChildOfPreviousItem() {
     expect.children("One", ["Two"]);
 
     await actions.moveLeft();
-    expect.isTrue(!oneItem.isOpen);
+    expect.isClosed("One");
     expect.isTrue(oneItem.children.length == 0);
     checkRootItems(["One", "Two"]);
 

@@ -7,6 +7,7 @@ export function loadItemsFromLocalStorage(): Item | undefined {
     if (saved) {
         const root: Item = JSON.parse(saved);
         root.parent = root;
+
         const stack = [root];
         while (stack.length > 0) {
             const parent = stack.pop()!;

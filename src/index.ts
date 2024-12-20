@@ -1,11 +1,10 @@
 import { handleKeyPress, onWheel } from "./actions";
-import { onResize, view } from "./utils/canvas";
+import { onResize } from "./utils/canvas";
 import { runTests } from "./tests/tests";
-import { data, item } from "./tree/tree";
+import { createRoot, data } from "./tree/tree";
 import { Edit } from "./undoRedo";
-import { buildViews, show, spacings, View } from "./view";
+import { buildViews, show, View } from "./view";
 import { scrollToSelectedItem } from "./scroll";
-import { saveItemsToLocalStorage } from "./persistance";
 
 window.addEventListener("resize", () => {
     onResize();
@@ -15,7 +14,9 @@ window.addEventListener("resize", () => {
 
 export type Mode = "normal" | "insert";
 
-const empty = item("EMPTY_ROOT");
+const empty = createRoot([]);
+empty.title = "EMPTY_ROOT";
+
 export const initialState = {
     position: 0,
     root: empty,
@@ -56,8 +57,8 @@ export function render() {
     show(state);
 }
 
-window.addEventListener("keydown", (e) => {
-    handleKeyPress(e);
+window.addEventListener("keydown", async (e) => {
+    await handleKeyPress(e);
     buildViews(state);
 
     scrollToSelectedItem(state);

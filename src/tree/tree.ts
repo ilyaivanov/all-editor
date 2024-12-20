@@ -1,11 +1,11 @@
-import { loadItemsFromLocalStorage } from "../persistance";
+import { loadItemsFromLocalStorage } from "../persistance.storage";
 import { sample } from "./data.root";
 
 export type Item = {
     parent: Item;
     title: string;
     children: Item[];
-    isOpen: boolean;
+    isOpen: boolean | undefined;
 };
 
 export function item(title: string, children: Item[] = []): Item {
@@ -15,8 +15,12 @@ export function item(title: string, children: Item[] = []): Item {
         parent: undefined!,
         isOpen: children.length > 0,
     };
-    res.parent = res;
     children.forEach((c) => (c.parent = res));
+    return res;
+}
+export function createRoot(children: Item[]) {
+    const res = item("Root", children);
+    res.parent = res;
     return res;
 }
 
@@ -24,7 +28,7 @@ export function item(title: string, children: Item[] = []): Item {
 
 export let data: Item =
     loadItemsFromLocalStorage() ||
-    item("Root", [
+    createRoot([
         item("Ambient", [
             item("Carbon Based Lifeforms", [
                 item("album 1"),
@@ -128,4 +132,10 @@ export function getPathToParent(item: Item) {
         item = item.parent;
     }
     return res;
+}
+
+export function insertAsLastChild(parent: Item, item: Item) {
+    removeItem(item);
+    parent.children.push(item);
+    item.parent = parent;
 }
