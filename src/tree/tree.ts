@@ -27,32 +27,7 @@ export function createRoot(children: Item[]) {
 // export let data: Item = sample;
 
 export let data: Item =
-    loadItemsFromLocalStorage() ||
-    createRoot([
-        item("Ambient", [
-            item("Carbon Based Lifeforms", [
-                item("album 1"),
-                item("album 2"),
-                item("album 3"),
-            ]),
-            item("Sync24", [
-                item("album 1"),
-                item("album 2"),
-                item("album 3"),
-                item("album 4"),
-            ]),
-            item("Koan", [
-                item("album 1"),
-                item("album 2"),
-                item("album 3"),
-                item("album 4"),
-                item("album 5"),
-                item("album 6"),
-            ]),
-        ]),
-        item("Electro", [item("Drum"), item("And"), item("Bass")]),
-        item("Piano", [item("David Nevue"), item("Isaac Shepard")]),
-    ]);
+    loadItemsFromLocalStorage() || createRoot([item("One"), item("Two")]);
 
 export function isRoot(item: Item) {
     return item.parent == item;

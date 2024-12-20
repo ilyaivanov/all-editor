@@ -1,7 +1,7 @@
 import { initialState, render, state } from "./../index";
 import { createRoot, Item, item } from "../tree/tree";
+import { tests } from "./expect";
 
-const tests: TestInfo[] = [];
 export { actions } from "./actions";
 export { expect } from "./expect";
 
@@ -30,13 +30,6 @@ import "./all-tests";
 export const TEXT_SPEED = 20;
 export const SLEEP = 40;
 // export const SLEEP = 200;
-
-type TestInfo = {
-    fn: () => Promise<undefined> | void;
-    label: string;
-    isPrimary: boolean;
-    isIgnored: boolean;
-};
 
 export function test(label: string, fn: () => void) {
     tests.push({ label, fn, isPrimary: false, isIgnored: false });

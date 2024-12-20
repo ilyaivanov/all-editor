@@ -1,6 +1,14 @@
 import { Mode, state } from "./../index";
 import { findItem, Item } from "../tree/tree";
 
+export type TestInfo = {
+    fn: () => Promise<undefined> | void;
+    label: string;
+    isPrimary: boolean;
+    isIgnored: boolean;
+};
+export const tests: TestInfo[] = [];
+
 export const expect = {
     isTrue: function isTrue(val: boolean, msg?: string) {
         if (!val) console.trace(msg);
