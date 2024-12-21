@@ -1,6 +1,6 @@
 import type { AppState, V2 } from "./index";
 import { getPathToParent, isRoot, Item } from "./tree/tree";
-import { ctx, setFont, view } from "./utils/canvas";
+import { ctx, fillSquareAtCenter, setFont, view } from "./utils/canvas";
 import { lerp } from "./utils/math";
 
 export const typography = {
@@ -34,6 +34,8 @@ const colors = {
     selectionBg: "#252525",
     scrollbar: "#204040",
 
+    nonEmptyClosedIcon: "#968037",
+
     cursorNormalMode: "rgb(20, 200, 20)",
     cursorInsertMode: "rgb(200, 20, 20)",
 };
@@ -43,13 +45,14 @@ export type View = {
     item: Item;
     fontSize: number;
     fontWeight: number;
+    level: number;
 };
 
 export function buildViews(state: AppState) {
     state.views.splice(0);
 
     const left = 20;
-    const top = 20;
+    const top = 10;
     const step = 20;
 
     let initialLevel = isRoot(state.focused) ? 0 : -1;
@@ -65,7 +68,6 @@ export function buildViews(state: AppState) {
     while (stack.length > 0) {
         const { item, level } = stack.pop()!;
 
-        const lineY = y;
         const lineX = left + Math.max(level, 0) * step;
 
         const fontSize =
@@ -87,12 +89,15 @@ export function buildViews(state: AppState) {
         const ms = ctx.measureText("f");
         const height = ms.fontBoundingBoxAscent + ms.fontBoundingBoxDescent;
 
+        y += (height * typography.lineHeight) / 2;
+
         state.views.push({
-            x: lineX,
-            y: lineY,
+            item,
+            level,
             fontSize,
             fontWeight: weight,
-            item,
+            x: lineX,
+            y,
         });
 
         if (item.isOpen || state.focused == item)
@@ -102,7 +107,7 @@ export function buildViews(state: AppState) {
                     .reverse()
             );
 
-        y += height * typography.lineHeight;
+        y += (height * typography.lineHeight) / 2;
     }
 
     state.pageHeight = y + top / 2;
@@ -118,8 +123,6 @@ export function show(state: AppState) {
 
     const { position, mode } = state;
 
-    ctx.textBaseline = "top";
-
     for (let i = 0; i < state.views.length; i++) {
         if (state.views[i].item == state.selectedItem) {
             const { x, y, fontSize, fontWeight, item } = state.views[i];
@@ -130,7 +133,7 @@ export function show(state: AppState) {
             const cursorX = x + m2.width;
 
             const cursorHeight = h * typography.lineHeight;
-            const cursorY = y - h * typography.lineHeight * 0.2;
+            const cursorY = y - (h * typography.lineHeight) / 2;
 
             ctx.fillStyle = colors.selectionBg;
             ctx.fillRect(0, cursorY, view.x, cursorHeight);
@@ -142,12 +145,19 @@ export function show(state: AppState) {
         }
     }
 
+    ctx.textBaseline = "middle";
     for (let i = 0; i < state.views.length; i++) {
-        const { x, y, fontSize, fontWeight, item } = state.views[i];
+        const { x, y, fontSize, fontWeight, item, level } = state.views[i];
         setFont(fontSize, fontWeight);
 
         ctx.fillStyle = colors.text;
         ctx.fillText(item.title, x, y);
+
+        if (item.children.length > 0 && !item.isOpen && item != state.focused) {
+            const iconSize = level == 0 ? 3 : 2;
+            ctx.fillStyle = colors.nonEmptyClosedIcon;
+            fillSquareAtCenter(x - 7, y, iconSize);
+        }
     }
 
     ctx.restore();

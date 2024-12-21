@@ -30,3 +30,7 @@ export function onResize() {
 export function setFont(size: number, weight = 400) {
     ctx.font = `${weight} ${size}px ${typography.font}`;
 }
+
+export function fillSquareAtCenter(x: number, y: number, size: number) {
+    ctx.fillRect(x - size / 2, y - size / 2, size, size);
+}

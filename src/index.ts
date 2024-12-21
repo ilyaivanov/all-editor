@@ -1,9 +1,14 @@
 import { handleKeyPress, onWheel } from "./actions";
 import { onResize } from "./utils/canvas";
-import { createRoot, data } from "./tree/tree";
+import { createRoot, findByTitle, findItem, item, Item } from "./tree/tree";
 import { Edit } from "./undoRedo";
 import { buildViews, show, View } from "./view";
 import { scrollToSelectedItem } from "./scroll";
+import {
+    loadItemsFromLocalStorage,
+    loadUserSettings,
+    saveUserSettings,
+} from "./persistance.storage";
 
 window.addEventListener("resize", () => {
     onResize();
@@ -36,12 +41,58 @@ export const initialState = {
     scrollOffset: 0,
 };
 
+const rootIfNoStored = createRoot([
+    item("Ambient", [
+        item("Carbon Based Lifeforms", [
+            item("album 1"),
+            item("album 2"),
+            item("album 3"),
+        ]),
+        item("Sync24", [
+            item("album 1"),
+            item("album 2"),
+            item("album 3"),
+            item("album 4"),
+        ]),
+        item("Koan", [
+            item("album 1"),
+            item("album 2"),
+            item("album 3"),
+            item("album 4"),
+            item("album 5"),
+            item("album 6"),
+        ]),
+    ]),
+    item("Electro", [item("Drum"), item("And"), item("Bass")]),
+    item("Piano", [item("David Nevue"), item("Isaac Shepard")]),
+]);
+
+const data: Item = loadItemsFromLocalStorage() || rootIfNoStored;
+
 export const state = {
     ...initialState,
-    root: data,
-    focused: data,
-    selectedItem: data.children[0],
 };
+
+const userSettings = loadUserSettings() || {
+    itemTitleFocused: "",
+    itemTitleSelected: "",
+    offset: 0,
+};
+
+let itemToFocus = data;
+let itemToSelect = data.children[0];
+
+if (userSettings.itemTitleFocused.length > 0) {
+    const itemFound = findByTitle(data, userSettings.itemTitleFocused);
+    if (itemFound) itemToFocus = itemFound;
+
+    const itemSelected = findByTitle(data, userSettings.itemTitleSelected);
+    if (itemSelected) itemToSelect = itemSelected;
+}
+state.root = data;
+state.focused = itemToFocus;
+state.selectedItem = itemToSelect;
+state.scrollOffset = userSettings ? userSettings.offset : 0;
 
 onResize();
 
@@ -56,11 +107,30 @@ export function render() {
     show(state);
 }
 
+function updateUserSettings() {
+    //TODO: use item ids instead of titles, but I don't want to clutter text files
+    // is it ok to erase User Settings when loading from a file
+    // do I have another option? maybe maybe not. scrikk ad other and foo 23
+    const needToUpdate =
+        userSettings.itemTitleFocused != state.focused.title ||
+        userSettings.itemTitleSelected != state.selectedItem.title ||
+        userSettings.offset != state.scrollOffset;
+
+    if (needToUpdate) {
+        userSettings.itemTitleFocused = state.focused.title;
+        userSettings.itemTitleSelected = state.selectedItem.title;
+        userSettings.offset = state.scrollOffset;
+
+        saveUserSettings(userSettings);
+    }
+}
+
 window.addEventListener("keydown", async (e) => {
     await handleKeyPress(e);
     buildViews(state);
 
     scrollToSelectedItem(state);
+    updateUserSettings();
 
     show(state);
 });
