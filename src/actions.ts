@@ -108,8 +108,15 @@ function jumpToSibling(direction: "up" | "down" | "left" | "right") {
         }
     } else if (direction == "right") {
         if (state.selectedItem.children.length > 0) {
-            if (state.focused != state.selectedItem)
-                state.selectedItem.isOpen = true;
+            if (state.focused != state.selectedItem) {
+                editTree(state, {
+                    type: "change",
+                    item: state.selectedItem,
+                    prop: "isOpen",
+                    newValue: true,
+                    oldValue: false,
+                });
+            }
             changeSelected(state.selectedItem.children[0]);
         }
     }
