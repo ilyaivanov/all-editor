@@ -57,6 +57,11 @@ export function onWheel(e: WheelEvent) {
 }
 
 const normalModeHandlers = [
+    { key: "KeyJ", fn: () => jumpToSibling("down"), ctrl: true },
+    { key: "KeyK", fn: () => jumpToSibling("up"), ctrl: true },
+    { key: "KeyH", fn: () => jumpToSibling("left"), ctrl: true },
+    { key: "KeyL", fn: () => jumpToSibling("right"), ctrl: true },
+
     { key: "KeyA", fn: moveCursorLeft },
     { key: "KeyF", fn: moveCursorRight },
     { key: "KeyW", fn: goToNextWord },
@@ -89,6 +94,26 @@ const normalModeHandlers = [
 
     { key: "Enter", fn: breakItem },
 ];
+
+function jumpToSibling(direction: "up" | "down" | "left" | "right") {
+    const context = state.selectedItem.parent.children;
+    const index = context.indexOf(state.selectedItem);
+    if (direction == "down") {
+        if (index < context.length - 1) changeSelected(context[index + 1]);
+    } else if (direction == "up") {
+        if (index > 0) changeSelected(context[index - 1]);
+    } else if (direction == "left") {
+        if (isSameOrParentOf(state.focused, state.selectedItem.parent)) {
+            changeSelected(state.selectedItem.parent);
+        }
+    } else if (direction == "right") {
+        if (state.selectedItem.children.length > 0) {
+            if (state.focused != state.selectedItem)
+                state.selectedItem.isOpen = true;
+            changeSelected(state.selectedItem.children[0]);
+        }
+    }
+}
 
 function renameEdit(item: Item, newName: string): Edit {
     return {
