@@ -37,3 +37,19 @@ export function saveItemsToLocalStorage(state: AppState) {
 
     localStorage.setItem(localStorageKey, serialized);
 }
+
+export type UserSettings = {
+    itemTitleFocused: string;
+    itemTitleSelected: string;
+    offset: number;
+};
+const localStorageSettingsKey = "all-editor:settings";
+export function saveUserSettings(settings: UserSettings) {
+    localStorage.setItem(localStorageSettingsKey, JSON.stringify(settings));
+}
+
+export function loadUserSettings(): UserSettings | undefined {
+    const res = localStorage.getItem(localStorageSettingsKey);
+    if (res) return JSON.parse(res);
+    else return undefined;
+}

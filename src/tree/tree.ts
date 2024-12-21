@@ -26,9 +26,6 @@ export function createRoot(children: Item[]) {
 
 // export let data: Item = sample;
 
-export let data: Item =
-    loadItemsFromLocalStorage() || createRoot([item("One"), item("Two")]);
-
 export function isRoot(item: Item) {
     return item.parent == item;
 }
@@ -76,6 +73,9 @@ export function addItemAt(parent: Item, child: Item, index: number) {
     parent.isOpen = true;
 }
 
+export function findByTitle(root: Item, title: string) {
+    return findItem(root, (i) => i.title == title);
+}
 export function findItem(root: Item, predicate: (item: Item) => boolean) {
     const stack = [...root.children];
     while (stack.length > 0) {
