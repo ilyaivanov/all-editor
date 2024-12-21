@@ -110,7 +110,7 @@ export function buildViews(state: AppState) {
         y += (height * typography.lineHeight) / 2;
     }
 
-    state.pageHeight = y + top / 2;
+    state.pageHeight = y + top;
 }
 
 export function show(state: AppState) {
