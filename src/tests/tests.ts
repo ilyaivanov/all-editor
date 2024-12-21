@@ -5,6 +5,10 @@ import { tests } from "./expect";
 export { actions } from "./actions";
 export { expect } from "./expect";
 
+export const TEXT_SPEED = 20;
+export const SLEEP = 20;
+// export const SLEEP = 200;
+
 export function init(items: string[]) {
     const children = items.map((v) => item(v));
     initWithItems(children);
@@ -26,10 +30,6 @@ export function initWithItems(items: Item[]) {
 }
 
 import "./all-tests";
-
-export const TEXT_SPEED = 20;
-export const SLEEP = 40;
-// export const SLEEP = 200;
 
 export function test(label: string, fn: () => void) {
     tests.push({ label, fn, isPrimary: false, isIgnored: false });

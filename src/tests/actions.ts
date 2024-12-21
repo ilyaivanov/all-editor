@@ -35,6 +35,8 @@ export const actions = {
 
     deleteSelected: async () => pressKey("D"),
 
+    pressKey,
+
     enterText: async function enterText(text: string) {
         for (const ch of text) await pressKey(ch, { delay: TEXT_SPEED });
     },
@@ -49,7 +51,7 @@ async function pressKey(
     options?: { delay?: number; shift?: boolean; alt?: boolean }
 ) {
     await sleep(options?.delay);
-    const fullKeys = ["Escape"];
+    const fullKeys = ["Escape", "Enter"];
     const code = fullKeys.includes(letter) ? letter : "Key" + letter;
     handleKeyPress({
         code,

@@ -31,7 +31,7 @@ export const initialState = {
     selectedItemTitleBeforeInsertMode: "",
     isItemAddedBeforeInsertMode: false,
     isRunningTests: false,
-    changeHistory: [] as Edit[],
+    changeHistory: [] as Edit[][],
     currentChange: -1,
 
     views: [] as View[],

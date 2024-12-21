@@ -33,64 +33,68 @@ export type Edit =
           newPosition: number;
       };
 
-export function editTree(state: AppState, edit: Edit) {
-    pushNewChange(state, edit);
-    performChange(state, edit);
+export function editTree(state: AppState, edit: Edit | Edit[]) {
+    const entry = Array.isArray(edit) ? edit : [edit];
+    pushNewChange(state, entry);
+    performChange(state, entry);
 }
 
-function performChange(state: AppState, edit: Edit) {
-    if (edit.type == "add") {
-        const { item, parent, position } = edit;
-        addItemAt(parent, item, position);
+function performChange(state: AppState, entry: Edit[]) {
+    for (const edit of entry) {
+        if (edit.type == "add") {
+            const { item, parent, position } = edit;
+            addItemAt(parent, item, position);
 
-        changeSelected(item);
-    }
+            changeSelected(item);
+        }
 
-    if (edit.type == "remove") {
-        removeItem(edit.item);
-        changeSelected(edit.itemToSelectNext);
-    }
+        if (edit.type == "remove") {
+            removeItem(edit.item);
+            changeSelected(edit.itemToSelectNext);
+        }
 
-    if (edit.type == "change") {
-        const { item, prop, newValue } = edit;
-        //TS is too restrictive here
-        (item as any)[prop] = newValue;
-        changeSelected(item);
-    }
+        if (edit.type == "change") {
+            const { item, prop, newValue } = edit;
+            //TS is too restrictive here
+            (item as any)[prop] = newValue;
+            changeSelected(item);
+        }
 
-    if (edit.type == "move") {
-        const { item, newParent, newPosition } = edit;
-        removeItem(item);
-        addItemAt(newParent, item, newPosition);
-        changeSelected(item);
+        if (edit.type == "move") {
+            const { item, newParent, newPosition } = edit;
+            removeItem(item);
+            addItemAt(newParent, item, newPosition);
+            changeSelected(item);
+        }
     }
 
     saveItemsToLocalStorage(state);
 }
 
-function revertChange(state: AppState, edit: Edit) {
-    if (edit.type == "add") {
-        removeItem(edit.item);
-        changeSelected(edit.selectedAtMoment);
-    }
-    if (edit.type == "remove") {
-        const { item, position } = edit;
+function revertChange(state: AppState, entry: Edit[]) {
+    for (const edit of entry) {
+        if (edit.type == "add") {
+            removeItem(edit.item);
+            changeSelected(edit.selectedAtMoment);
+        }
+        if (edit.type == "remove") {
+            const { item, position } = edit;
 
-        addItemAt(item.parent, item, position);
-        changeSelected(item);
-    } else if (edit.type == "change") {
-        const { item, prop, oldValue } = edit;
-        //TS is too restrictive here
-        (item as any)[prop] = oldValue;
-        changeSelected(item);
+            addItemAt(item.parent, item, position);
+            changeSelected(item);
+        } else if (edit.type == "change") {
+            const { item, prop, oldValue } = edit;
+            //TS is too restrictive here
+            (item as any)[prop] = oldValue;
+            changeSelected(item);
+        }
+        if (edit.type == "move") {
+            const { item, oldParent, oldPosition } = edit;
+            removeItem(item);
+            addItemAt(oldParent, item, oldPosition);
+            changeSelected(item);
+        }
     }
-    if (edit.type == "move") {
-        const { item, oldParent, oldPosition } = edit;
-        removeItem(item);
-        addItemAt(oldParent, item, oldPosition);
-        changeSelected(item);
-    }
-
     saveItemsToLocalStorage(state);
 }
 
@@ -112,7 +116,7 @@ export function redoLastChange(state: AppState) {
     }
 }
 
-function pushNewChange(state: AppState, change: Edit) {
+function pushNewChange(state: AppState, change: Edit[]) {
     const { currentChange, changeHistory } = state;
     if (currentChange < changeHistory.length - 1) {
         changeHistory.splice(

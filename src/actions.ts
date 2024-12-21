@@ -5,7 +5,7 @@ import {
     getItemBelow,
     getItemToSelectAfterRemovingSelected,
 } from "./selection";
-import { editTree, redoLastChange, undoLastChange } from "./undoRedo";
+import { Edit, editTree, redoLastChange, undoLastChange } from "./undoRedo";
 import { moveSelectedItem } from "./movement";
 import { clampOffset } from "./scroll";
 import { loadFromFile, saveToFile } from "./persistance.file";
@@ -29,6 +29,7 @@ export async function handleKeyPress(e: KeyboardEvent) {
             await handler.fn();
         }
     } else {
+        //TODO extract these into data driven events
         if (e.code == "Escape") {
             if (state.isItemAddedBeforeInsertMode) {
                 state.isItemAddedBeforeInsertMode = false;
@@ -45,6 +46,8 @@ export async function handleKeyPress(e: KeyboardEvent) {
             state.mode = "normal";
         } else if (e.code == "Backspace") {
             removeCharFromLeft();
+        } else if (e.code == "Enter") {
+            breakItem();
         } else if (e.key.length == 1) insertStr(e.key);
     }
 }
@@ -65,9 +68,9 @@ const normalModeHandlers = [
     { key: "KeyI", fn: enterInsertMode },
     { key: "Backspace", fn: removeCharFromLeft },
     { key: "KeyX", fn: removeCurrentChar },
-    { key: "KeyO", fn: addItemBelow },
-    { key: "KeyO", fn: addItemAbove, shift: true },
-    { key: "KeyO", fn: addItemInside, ctrl: true },
+    { key: "KeyO", fn: addItemBelowAndStartEdit },
+    { key: "KeyO", fn: addItemAboveAndStartEdit, shift: true },
+    { key: "KeyO", fn: addItemInsideAndStartEdit, ctrl: true },
     { key: "KeyR", fn: replaceTitle },
     { key: "KeyD", fn: removeSelectedItem },
     { key: "KeyU", fn: () => undoLastChange(state) },
@@ -83,7 +86,105 @@ const normalModeHandlers = [
 
     { key: "KeyS", fn: () => saveToFile(state.root), meta: true, noDef: true },
     { key: "KeyL", fn: loadRootFromFile, meta: true, noDef: true },
+
+    { key: "Enter", fn: breakItem },
 ];
+
+function renameEdit(item: Item, newName: string): Edit {
+    return {
+        type: "change",
+        item,
+        prop: "title",
+        oldValue: item.title,
+        newValue: newName,
+    };
+}
+function breakItem() {
+    const left = state.selectedItem.title.slice(0, state.position);
+    const right = state.selectedItem.title.slice(state.position);
+
+    const editToAdd = createEditForAddingItemAfterSelected();
+    editToAdd.item.title = right;
+    if (state.mode == "insert") state.isItemAddedBeforeInsertMode = true;
+
+    editTree(state, [renameEdit(state.selectedItem, left), editToAdd]);
+    changeSelected(editToAdd.item);
+}
+function createEditForAddingItemAfterSelected(): Edit {
+    const newItem = item("");
+    if (state.selectedItem == state.focused) {
+        state.selectedItem.isOpen = true;
+        return {
+            type: "add",
+            item: newItem,
+            parent: state.selectedItem,
+            position: 0,
+            selectedAtMoment: state.selectedItem,
+        };
+    }
+    const context = state.selectedItem.parent.children;
+    const index = context.indexOf(state.selectedItem);
+    return {
+        type: "add",
+        item: newItem,
+        parent: state.selectedItem.parent,
+        position: index + 1,
+        selectedAtMoment: state.selectedItem,
+    };
+}
+
+function addItemBelow() {
+    if (state.selectedItem == state.focused) return addItemInside();
+    const context = state.selectedItem.parent.children;
+    const index = context.indexOf(state.selectedItem);
+    const newItem = item("");
+    editTree(state, {
+        type: "add",
+        item: newItem,
+        parent: state.selectedItem.parent,
+        position: index + 1,
+        selectedAtMoment: state.selectedItem,
+    });
+    changeSelected(newItem);
+}
+
+function addItemInside() {
+    state.selectedItem.isOpen = true;
+    const newItem = item("");
+    editTree(state, {
+        type: "add",
+        item: newItem,
+        parent: state.selectedItem,
+        position: 0,
+        selectedAtMoment: state.selectedItem,
+    });
+    changeSelected(newItem);
+}
+
+function addItemBelowAndStartEdit() {
+    addItemBelow();
+    state.isItemAddedBeforeInsertMode = true;
+    state.mode = "insert";
+}
+
+function addItemAboveAndStartEdit() {
+    if (state.selectedItem == state.focused) return addItemInsideAndStartEdit();
+
+    const context = state.selectedItem.parent.children;
+    const index = context.indexOf(state.selectedItem);
+    const newItem = item("");
+    newItem.parent = state.selectedItem.parent;
+    context.splice(index, 0, newItem);
+    changeSelected(newItem);
+    state.isItemAddedBeforeInsertMode = true;
+    state.mode = "insert";
+}
+
+function addItemInsideAndStartEdit() {
+    addItemInside();
+    state.isItemAddedBeforeInsertMode = true;
+    state.mode = "insert";
+}
 
 async function loadRootFromFile() {
     const fileRoot = await loadFromFile();
@@ -129,47 +230,6 @@ function removeSelectedItem() {
         position: index,
         itemToSelectNext,
     });
-}
-
-function addItemBelow() {
-    if (state.selectedItem == state.focused) return addItemInside();
-
-    const context = state.selectedItem.parent.children;
-    const index = context.indexOf(state.selectedItem);
-    const newItem = item("");
-    editTree(state, {
-        type: "add",
-        item: newItem,
-        parent: state.selectedItem.parent,
-        position: index + 1,
-        selectedAtMoment: state.selectedItem,
-    });
-    changeSelected(newItem);
-    state.isItemAddedBeforeInsertMode = true;
-    state.mode = "insert";
-}
-
-function addItemAbove() {
-    if (state.selectedItem == state.focused) return addItemInside();
-
-    const context = state.selectedItem.parent.children;
-    const index = context.indexOf(state.selectedItem);
-    const newItem = item("");
-    newItem.parent = state.selectedItem.parent;
-    context.splice(index, 0, newItem);
-    changeSelected(newItem);
-    state.isItemAddedBeforeInsertMode = true;
-    state.mode = "insert";
-}
-
-function addItemInside() {
-    state.selectedItem.isOpen = true;
-    const newItem = item("");
-    state.selectedItem.children.unshift(newItem);
-    newItem.parent = state.selectedItem;
-    changeSelected(newItem);
-    state.isItemAddedBeforeInsertMode = true;
-    state.mode = "insert";
 }
 
 export function changeSelected(item: Item | undefined) {
