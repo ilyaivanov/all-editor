@@ -114,3 +114,14 @@ export function insertAsLastChild(parent: Item, item: Item) {
     parent.children.push(item);
     item.parent = parent;
 }
+
+export function forEachChild(parent: Item, fn: (item: Item) => void) {
+    const stack = [...parent.children];
+    while (stack.length > 0) {
+        const item = stack.pop()!;
+
+        fn(item);
+
+        if (item.children.length > 0) stack.push(...item.children);
+    }
+}

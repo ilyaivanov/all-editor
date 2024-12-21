@@ -1,11 +1,23 @@
 import { state } from "./index";
-import { isRoot, isSameOrParentOf, item, Item } from "./tree/tree";
+import {
+    forEachChild,
+    isRoot,
+    isSameOrParentOf,
+    item,
+    Item,
+} from "./tree/tree";
 import {
     getItemAbove,
     getItemBelow,
     getItemToSelectAfterRemovingSelected,
 } from "./selection";
-import { Edit, editTree, redoLastChange, undoLastChange } from "./undoRedo";
+import {
+    Edit,
+    editTree,
+    redoLastChange,
+    undoLastChange,
+    changes,
+} from "./undoRedo";
 import { moveSelectedItem } from "./movement";
 import { clampOffset } from "./scroll";
 import { loadFromFile, saveToFile } from "./persistance.file";
@@ -35,13 +47,14 @@ export async function handleKeyPress(e: KeyboardEvent) {
                 state.isItemAddedBeforeInsertMode = false;
                 saveItemsToLocalStorage(state);
             } else {
-                editTree(state, {
-                    type: "change",
-                    item: state.selectedItem,
-                    prop: "title",
-                    newValue: state.selectedItem.title,
-                    oldValue: state.selectedItemTitleBeforeInsertMode,
-                });
+                editTree(
+                    state,
+                    changes.renameWithOld(
+                        state.selectedItem,
+                        state.selectedItem.title,
+                        state.selectedItemTitleBeforeInsertMode
+                    )
+                );
             }
             state.mode = "normal";
         } else if (e.code == "Backspace") {
@@ -61,6 +74,9 @@ const normalModeHandlers = [
     { key: "KeyK", fn: () => jumpToSibling("up"), ctrl: true },
     { key: "KeyH", fn: () => jumpToSibling("left"), ctrl: true },
     { key: "KeyL", fn: () => jumpToSibling("right"), ctrl: true },
+
+    { key: "KeyQ", fn: closeAll },
+    { key: "KeyE", fn: openAll },
 
     { key: "KeyA", fn: moveCursorLeft },
     { key: "KeyF", fn: moveCursorRight },
@@ -95,6 +111,29 @@ const normalModeHandlers = [
     { key: "Enter", fn: breakItem },
 ];
 
+function closeAll() {
+    const closeEdits: Edit[] = [];
+    forEachChild(state.selectedItem, (i) => {
+        if (i.isOpen) closeEdits.push(changes.closeItem(i));
+    });
+    if (state.selectedItem)
+        closeEdits.push(changes.closeItem(state.selectedItem));
+
+    editTree(state, closeEdits);
+}
+
+function openAll() {
+    const openEdits: Edit[] = [];
+    forEachChild(state.selectedItem, (i) => {
+        if (!i.isOpen && i.children.length > 0)
+            openEdits.push(changes.openItem(i));
+    });
+    if (state.selectedItem)
+        openEdits.push(changes.openItem(state.selectedItem));
+
+    editTree(state, openEdits);
+}
+
 function jumpToSibling(direction: "up" | "down" | "left" | "right") {
     const context = state.selectedItem.parent.children;
     const index = context.indexOf(state.selectedItem);
@@ -109,28 +148,13 @@ function jumpToSibling(direction: "up" | "down" | "left" | "right") {
     } else if (direction == "right") {
         if (state.selectedItem.children.length > 0) {
             if (state.focused != state.selectedItem) {
-                editTree(state, {
-                    type: "change",
-                    item: state.selectedItem,
-                    prop: "isOpen",
-                    newValue: true,
-                    oldValue: false,
-                });
+                editTree(state, changes.openItem(state.selectedItem));
             }
             changeSelected(state.selectedItem.children[0]);
         }
     }
 }
 
-function renameEdit(item: Item, newName: string): Edit {
-    return {
-        type: "change",
-        item,
-        prop: "title",
-        oldValue: item.title,
-        newValue: newName,
-    };
-}
 function breakItem() {
     const left = state.selectedItem.title.slice(0, state.position);
     const right = state.selectedItem.title.slice(state.position);
@@ -139,58 +163,36 @@ function breakItem() {
     editToAdd.item.title = right;
     if (state.mode == "insert") state.isItemAddedBeforeInsertMode = true;
 
-    editTree(state, [renameEdit(state.selectedItem, left), editToAdd]);
+    editTree(state, [changes.rename(state.selectedItem, left), editToAdd]);
     changeSelected(editToAdd.item);
 }
 function createEditForAddingItemAfterSelected(): Edit {
     const newItem = item("");
     if (state.selectedItem == state.focused) {
         state.selectedItem.isOpen = true;
-        return {
-            type: "add",
-            item: newItem,
-            parent: state.selectedItem,
-            position: 0,
-            selectedAtMoment: state.selectedItem,
-        };
+        return changes.add(newItem, state.selectedItem, 0, state);
     }
     const context = state.selectedItem.parent.children;
     const index = context.indexOf(state.selectedItem);
-    return {
-        type: "add",
-        item: newItem,
-        parent: state.selectedItem.parent,
-        position: index + 1,
-        selectedAtMoment: state.selectedItem,
-    };
+    return changes.add(newItem, state.selectedItem.parent, index + 1, state);
 }
 
 function addItemBelow() {
     if (state.selectedItem == state.focused) return addItemInside();
     const context = state.selectedItem.parent.children;
     const index = context.indexOf(state.selectedItem);
-    const newItem = item("");
-    editTree(state, {
-        type: "add",
-        item: newItem,
-        parent: state.selectedItem.parent,
-        position: index + 1,
-        selectedAtMoment: state.selectedItem,
-    });
-    changeSelected(newItem);
+
+    const parent = state.selectedItem.parent;
+    const edit = changes.add(item(""), parent, index + 1, state);
+    editTree(state, edit);
+    changeSelected(edit.item);
 }
 
 function addItemInside() {
     state.selectedItem.isOpen = true;
-    const newItem = item("");
-    editTree(state, {
-        type: "add",
-        item: newItem,
-        parent: state.selectedItem,
-        position: 0,
-        selectedAtMoment: state.selectedItem,
-    });
-    changeSelected(newItem);
+    const edit = changes.add(item(""), state.selectedItem, 0, state);
+    editTree(state, edit);
+    changeSelected(edit.item);
 }
 
 function addItemBelowAndStartEdit() {
@@ -251,17 +253,10 @@ function replaceTitle() {
 function removeSelectedItem() {
     if (state.selectedItem == state.focused) return;
 
-    const context = state.selectedItem.parent.children;
-    const index = context.indexOf(state.selectedItem);
     const itemToSelectNext = getItemToSelectAfterRemovingSelected(
         state.selectedItem
     );
-    editTree(state, {
-        type: "remove",
-        item: state.selectedItem,
-        position: index,
-        itemToSelectNext,
-    });
+    editTree(state, changes.remove(state.selectedItem, itemToSelectNext));
 }
 
 export function changeSelected(item: Item | undefined) {
@@ -314,14 +309,7 @@ function moveCursorRight() {
 function goLeft() {
     const { selectedItem } = state;
     if (selectedItem.isOpen && state.focused != state.selectedItem) {
-        editTree(state, {
-            type: "change",
-            item: selectedItem,
-            prop: "isOpen",
-            newValue: false,
-            oldValue: true,
-        });
-        // selectedItem.isOpen = false;
+        editTree(state, changes.closeItem(selectedItem));
     } else if (!isRoot(selectedItem.parent)) {
         changeSelected(selectedItem.parent);
     }
@@ -330,13 +318,7 @@ function goLeft() {
 function goRight() {
     const { selectedItem } = state;
     if (!selectedItem.isOpen && selectedItem.children.length > 0) {
-        editTree(state, {
-            type: "change",
-            item: selectedItem,
-            prop: "isOpen",
-            newValue: true,
-            oldValue: false,
-        });
+        editTree(state, changes.openItem(selectedItem));
     } else if (selectedItem.children.length > 0)
         changeSelected(selectedItem.children[0]);
 }

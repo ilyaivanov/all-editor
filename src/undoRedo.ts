@@ -3,6 +3,55 @@ import { changeSelected } from "./actions";
 import { saveItemsToLocalStorage } from "./persistance.storage";
 import { addItemAt, Item, removeItem } from "./tree/tree";
 
+export const changes = {
+    closeItem: (item: Item): Edit => ({
+        type: "change",
+        item,
+        prop: "isOpen",
+        newValue: false,
+        oldValue: item.isOpen,
+    }),
+
+    openItem: (item: Item): Edit => ({
+        type: "change",
+        item,
+        prop: "isOpen",
+        newValue: true,
+        oldValue: item.isOpen,
+    }),
+
+    rename: (item: Item, newName: string): Edit => ({
+        type: "change",
+        item,
+        prop: "title",
+        oldValue: item.title,
+        newValue: newName,
+    }),
+
+    renameWithOld: (item: Item, newName: string, oldName: string): Edit => ({
+        type: "change",
+        item,
+        prop: "title",
+        oldValue: oldName,
+        newValue: newName,
+    }),
+
+    add: (newItem: Item, parent: Item, at: number, state: AppState): Edit => ({
+        type: "add",
+        item: newItem,
+        parent: parent,
+        position: at,
+        selectedAtMoment: state.selectedItem,
+    }),
+
+    remove: (item: Item, itemToSelectNext: Item | undefined): Edit => ({
+        type: "remove",
+        item: item,
+        position: item.parent.children.indexOf(item),
+        itemToSelectNext,
+    }),
+};
+
 export type Edit =
     | {
           type: "change";
