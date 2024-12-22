@@ -22,8 +22,8 @@ import { moveSelectedItem } from "./movement";
 import { clampOffset } from "./scroll";
 import { loadFromFile, saveToFile } from "./persistance.file";
 import { saveItemsToLocalStorage } from "./persistance.storage";
-import { handleModalKey, showModal } from "./modal";
-import { quickSearchKeyPress, showQuickSearch } from "./quickSearch";
+import { handleModalKey, showModal } from "./shitcode/searchModal";
+import { quickSearchKeyPress, showQuickSearch } from "./shitcode/quickSearch";
 
 export async function handleKeyPress(e: KeyboardEvent) {
     if (e.metaKey && e.code == "KeyR") return;

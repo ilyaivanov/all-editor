@@ -1,8 +1,8 @@
-import { removeChar } from "./actions";
-import { AppState } from "./index";
-import { scrollToItemView } from "./scroll";
-import { ctx, view } from "./utils/canvas";
-import { colors, View } from "./view";
+import { removeChar } from "../actions";
+import { AppState } from "../index";
+import { scrollToItemView } from "../scroll";
+import { ctx, view } from "../utils/canvas";
+import { colors, View } from "../view";
 
 export const quickSearchState = {
     isActive: false,

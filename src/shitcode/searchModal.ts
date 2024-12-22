@@ -1,8 +1,8 @@
-import { removeChar } from "./actions";
-import { AppState } from "./index";
-import { forEachChild, Item } from "./tree/tree";
-import { ctx, setFont, view } from "./utils/canvas";
-import { colors, typography } from "./view";
+import { removeChar } from "../actions";
+import { AppState } from "../index";
+import { forEachChild, Item } from "../tree/tree";
+import { ctx, setFont, view } from "../utils/canvas";
+import { colors, typography } from "../view";
 
 type ModalFocus = "unfocus" | "title";
 

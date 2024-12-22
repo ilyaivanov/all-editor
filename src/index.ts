@@ -9,8 +9,8 @@ import {
     loadUserSettings,
     saveUserSettings,
 } from "./persistance.storage";
-import { searchInit } from "./modal";
-import { quickSearchState } from "./quickSearch";
+import { searchInit } from "./shitcode/searchModal";
+import { quickSearchState } from "./shitcode/quickSearch";
 
 window.addEventListener("resize", () => {
     onResize();
