@@ -67,6 +67,10 @@ export function handleModalKey(state: AppState, e: KeyboardEvent) {
 }
 
 export function viewModal(state: AppState) {
+    const { searchModal } = state;
+
+    if (searchModal.focusOn == "unfocus") return;
+
     ctx.globalAlpha = 0.5;
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, view.x, view.y);
@@ -109,7 +113,6 @@ export function viewModal(state: AppState) {
 
     let y = 35 + 5 + 10;
     let x = view.x / 2 - width / 2 + 10;
-    const { searchModal } = state;
     let res = searchModal.results;
     for (let i = 0; i < Math.min(res.length, 10); i++) {
         if (i == searchModal.selectedIndex) {

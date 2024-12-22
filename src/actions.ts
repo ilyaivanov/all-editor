@@ -23,12 +23,15 @@ import { clampOffset } from "./scroll";
 import { loadFromFile, saveToFile } from "./persistance.file";
 import { saveItemsToLocalStorage } from "./persistance.storage";
 import { handleModalKey, showModal } from "./modal";
+import { quickSearchKeyPress, showQuickSearch } from "./quickSearch";
 
 export async function handleKeyPress(e: KeyboardEvent) {
     if (e.metaKey && e.code == "KeyR") return;
 
     if (state.searchModal.focusOn != "unfocus") {
         handleModalKey(state, e);
+    } else if (state.quickSearch.isActive) {
+        quickSearchKeyPress(state, e);
     } else if (state.mode == "normal") {
         const handler = normalModeHandlers.find(
             (h) =>
@@ -82,6 +85,7 @@ const normalModeHandlers = [
     { key: "KeyE", fn: openAll },
 
     { key: "KeyP", fn: () => showModal(state), meta: true, noDef: true },
+    { key: "KeyF", fn: () => showQuickSearch(state), meta: true, noDef: true },
 
     { key: "KeyA", fn: moveCursorLeft },
     { key: "KeyF", fn: moveCursorRight },

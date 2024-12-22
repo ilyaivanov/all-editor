@@ -1,5 +1,6 @@
 import type { AppState, V2 } from "./index";
 import { showModal, viewModal } from "./modal";
+import { viewQuickSearch } from "./quickSearch";
 import { getPathToParent, isRoot, Item } from "./tree/tree";
 import { ctx, fillSquareAtCenter, setFont, view } from "./utils/canvas";
 import { lerp } from "./utils/math";
@@ -170,7 +171,9 @@ export function show(state: AppState) {
 
     drawFooter(state);
 
-    if (state.searchModal.focusOn != "unfocus") viewModal(state);
+    viewModal(state);
+
+    viewQuickSearch(state);
 }
 
 function drawScrollBar(state: AppState) {

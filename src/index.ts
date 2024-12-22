@@ -10,6 +10,7 @@ import {
     saveUserSettings,
 } from "./persistance.storage";
 import { searchInit } from "./modal";
+import { quickSearchState } from "./quickSearch";
 
 window.addEventListener("resize", () => {
     onResize();
@@ -42,6 +43,7 @@ export const initialState = {
     scrollOffset: 0,
 
     searchModal: searchInit,
+    quickSearch: quickSearchState,
 };
 
 const rootIfNoStored = createRoot([
