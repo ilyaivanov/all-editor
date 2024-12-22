@@ -22,11 +22,14 @@ import { moveSelectedItem } from "./movement";
 import { clampOffset } from "./scroll";
 import { loadFromFile, saveToFile } from "./persistance.file";
 import { saveItemsToLocalStorage } from "./persistance.storage";
+import { handleModalKey, showModal } from "./modal";
 
 export async function handleKeyPress(e: KeyboardEvent) {
     if (e.metaKey && e.code == "KeyR") return;
 
-    if (state.mode == "normal") {
+    if (state.searchModal.focusOn != "unfocus") {
+        handleModalKey(state, e);
+    } else if (state.mode == "normal") {
         const handler = normalModeHandlers.find(
             (h) =>
                 h.key == e.code &&
@@ -77,6 +80,8 @@ const normalModeHandlers = [
 
     { key: "KeyQ", fn: closeAll },
     { key: "KeyE", fn: openAll },
+
+    { key: "KeyP", fn: () => showModal(state), meta: true, noDef: true },
 
     { key: "KeyA", fn: moveCursorLeft },
     { key: "KeyF", fn: moveCursorRight },
@@ -333,7 +338,7 @@ function goUp() {
 function insertStrAt(str: string, ch: string, at: number) {
     return str.slice(0, at) + ch + str.slice(at);
 }
-function removeChar(str: string, at: number) {
+export function removeChar(str: string, at: number) {
     return str.slice(0, at) + str.slice(at + 1);
 }
 
