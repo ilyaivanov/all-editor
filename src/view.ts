@@ -1,4 +1,6 @@
-import type { AppState, V2 } from "./index";
+import type { AppState } from "./index";
+import { viewModal } from "./shitcode/searchModal";
+import { viewQuickSearch } from "./shitcode/quickSearch";
 import { getPathToParent, isRoot, Item } from "./tree/tree";
 import { ctx, fillSquareAtCenter, setFont, view } from "./utils/canvas";
 import { lerp } from "./utils/math";
@@ -25,7 +27,7 @@ export const spacings = {
     footerHeight: 20,
 };
 
-const colors = {
+export const colors = {
     bg: "#0c0c0c",
     footerBg: "#2c2c2c",
     text: "#e0e0e0",
@@ -38,6 +40,9 @@ const colors = {
 
     cursorNormalMode: "rgb(20, 200, 20)",
     cursorInsertMode: "rgb(200, 20, 20)",
+
+    //modal
+    modalBg: "#1c1c1c",
 };
 export type View = {
     x: number;
@@ -165,6 +170,10 @@ export function show(state: AppState) {
     drawScrollBar(state);
 
     drawFooter(state);
+
+    viewModal(state);
+
+    viewQuickSearch(state);
 }
 
 function drawScrollBar(state: AppState) {

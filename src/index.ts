@@ -9,6 +9,8 @@ import {
     loadUserSettings,
     saveUserSettings,
 } from "./persistance.storage";
+import { searchInit } from "./shitcode/searchModal";
+import { quickSearchState } from "./shitcode/quickSearch";
 
 window.addEventListener("resize", () => {
     onResize();
@@ -39,6 +41,9 @@ export const initialState = {
     pageHeight: 0,
     drawableCanvasHeight: 0,
     scrollOffset: 0,
+
+    searchModal: searchInit,
+    quickSearch: quickSearchState,
 };
 
 const rootIfNoStored = createRoot([
@@ -137,7 +142,7 @@ window.addEventListener("keydown", async (e) => {
 
 window.addEventListener("wheel", (e) => {
     onWheel(e);
-    render();
+    show(state);
 });
 
 const url = new URL(location.toString());

@@ -1,6 +1,6 @@
 import { AppState, state } from "./index";
 import { clamp } from "./utils/math";
-import { typography } from "./view";
+import { typography, View } from "./view";
 
 export function clampOffset(val: number) {
     const maxOffset = Math.max(
@@ -11,11 +11,13 @@ export function clampOffset(val: number) {
 }
 
 export function scrollToSelectedItem(state: AppState) {
-    const itemsToLookAhead = 3;
-
     let itemView = state.views.find((v) => v.item == state.selectedItem);
 
-    if (!itemView) return;
+    if (itemView) scrollToItemView(itemView);
+}
+
+export function scrollToItemView(itemView: View) {
+    const itemsToLookAhead = 3;
 
     const { pageHeight, scrollOffset } = state;
     const height = state.drawableCanvasHeight;
