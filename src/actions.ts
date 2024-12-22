@@ -25,6 +25,19 @@ import { saveItemsToLocalStorage } from "./persistance.storage";
 import { handleModalKey, showModal } from "./shitcode/searchModal";
 import { quickSearchKeyPress, showQuickSearch } from "./shitcode/quickSearch";
 
+function doesHandlerMatch(
+    e: KeyboardEvent,
+    h: (typeof normalModeHandlers)[number]
+) {
+    return (
+        h.key == e.code &&
+        !!h.shift == !!e.shiftKey &&
+        !!h.ctrl == !!e.ctrlKey &&
+        !!h.alt == !!e.altKey &&
+        !!h.meta == !!e.metaKey
+    );
+}
+
 export async function handleKeyPress(e: KeyboardEvent) {
     if (e.metaKey && e.code == "KeyR") return;
 
@@ -33,47 +46,33 @@ export async function handleKeyPress(e: KeyboardEvent) {
     } else if (state.quickSearch.isActive) {
         quickSearchKeyPress(state, e);
     } else if (state.mode == "normal") {
-        const handler = normalModeHandlers.find(
-            (h) =>
-                h.key == e.code &&
-                !!h.shift == !!e.shiftKey &&
-                !!h.ctrl == !!e.ctrlKey &&
-                !!h.alt == !!e.altKey &&
-                !!h.meta == !!e.metaKey
-        );
+        const handler = normalModeHandlers.find((h) => doesHandlerMatch(e, h));
         if (handler) {
             if (handler.noDef) e.preventDefault();
 
             await handler.fn();
         }
     } else {
-        //TODO extract these into data driven events
-        if (e.code == "Escape") {
-            if (state.isItemAddedBeforeInsertMode) {
-                state.isItemAddedBeforeInsertMode = false;
-                saveItemsToLocalStorage(state);
-            } else {
-                editTree(
-                    state,
-                    changes.renameWithOld(
-                        state.selectedItem,
-                        state.selectedItem.title,
-                        state.selectedItemTitleBeforeInsertMode
-                    )
-                );
-            }
-            state.mode = "normal";
-        } else if (e.code == "Backspace") {
-            removeCharFromLeft();
-        } else if (e.code == "Enter") {
-            breakItem();
-        } else if (e.key.length == 1) insertStr(e.key);
+        const handler = insertModeHandlers.find((h) => doesHandlerMatch(e, h));
+        if (handler) await handler.fn();
+        else if (e.key.length == 1) insertStr(e.key);
     }
 }
 
 export function onWheel(e: WheelEvent) {
     state.scrollOffset = clampOffset(state.scrollOffset + e.deltaY);
 }
+
+const insertModeHandlers = [
+    { key: "Escape", fn: exitRename },
+    { key: "Backspace", fn: removeCharFromLeft },
+    { key: "Enter", fn: breakItem },
+
+    { key: "KeyJ", fn: () => moveSelectedItem(state, "down"), alt: true },
+    { key: "KeyK", fn: () => moveSelectedItem(state, "up"), alt: true },
+    { key: "KeyL", fn: () => moveSelectedItem(state, "right"), alt: true },
+    { key: "KeyH", fn: () => moveSelectedItem(state, "left"), alt: true },
+];
 
 const normalModeHandlers = [
     { key: "KeyJ", fn: () => jumpToSibling("down"), ctrl: true },
@@ -162,6 +161,22 @@ function jumpToSibling(direction: "up" | "down" | "left" | "right") {
             changeSelected(state.selectedItem.children[0]);
         }
     }
+}
+function exitRename() {
+    if (state.isItemAddedBeforeInsertMode) {
+        state.isItemAddedBeforeInsertMode = false;
+        saveItemsToLocalStorage(state);
+    } else {
+        editTree(
+            state,
+            changes.renameWithOld(
+                state.selectedItem,
+                state.selectedItem.title,
+                state.selectedItemTitleBeforeInsertMode
+            )
+        );
+    }
+    state.mode = "normal";
 }
 
 function breakItem() {
