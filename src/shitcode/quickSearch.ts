@@ -46,11 +46,13 @@ export function quickSearchKeyPress(state: AppState, e: KeyboardEvent) {
         else quickSearch.focusedAt++;
 
         scrollIntoFocusedAt(state);
+        e.preventDefault();
     } else if (e.code == "KeyK" && e.metaKey) {
         if (quickSearch.focusedAt > 0) quickSearch.focusedAt--;
         else quickSearch.focusedAt = quickSearch.results.length - 1;
 
         scrollIntoFocusedAt(state);
+        e.preventDefault();
     } else if (e.code == "Backspace") {
         const term = quickSearch.term;
         quickSearch.term = removeChar(term, term.length - 1);

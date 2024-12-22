@@ -38,8 +38,10 @@ export function handleModalKey(state: AppState, e: KeyboardEvent) {
         e.preventDefault();
     } else if (e.metaKey && e.code == "KeyJ") {
         searchModal.selectedIndex++;
+        e.preventDefault();
     } else if (e.metaKey && e.code == "KeyK") {
         searchModal.selectedIndex--;
+        e.preventDefault();
     } else if (e.metaKey && e.code == "KeyH") {
         searchModal.selectedIndex--;
     } else if (e.code == "Backspace") {
