@@ -1,11 +1,9 @@
-import { loadItemsFromLocalStorage } from "../persistance.storage";
-import { sample } from "./data.root";
-
 export type Item = {
     parent: Item;
     title: string;
     children: Item[];
     isOpen: boolean | undefined;
+    videoId?: string;
 };
 
 export function item(title: string, children: Item[] = []): Item {

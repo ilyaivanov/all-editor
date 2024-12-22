@@ -24,6 +24,7 @@ import { loadFromFile, saveToFile } from "./persistance.file";
 import { saveItemsToLocalStorage } from "./persistance.storage";
 import { handleModalKey, showModal } from "./shitcode/searchModal";
 import { quickSearchKeyPress, showQuickSearch } from "./shitcode/quickSearch";
+import { play } from "./player/youtubePlayer";
 
 function doesHandlerMatch(
     e: KeyboardEvent,
@@ -117,7 +118,14 @@ const normalModeHandlers = [
     { key: "KeyL", fn: loadRootFromFile, meta: true, noDef: true },
 
     { key: "Enter", fn: breakItem },
+
+    //player
+    { key: "Space", fn: playSelected },
 ];
+
+function playSelected() {
+    if (state.selectedItem.videoId) play(state.selectedItem.videoId);
+}
 
 function closeAll() {
     const closeEdits: Edit[] = [];

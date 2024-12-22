@@ -41,9 +41,12 @@ export const colors = {
     cursorNormalMode: "rgb(20, 200, 20)",
     cursorInsertMode: "rgb(200, 20, 20)",
 
+    videoItemStripe: "rgb(160, 10, 10)",
+
     //modal
     modalBg: "#1c1c1c",
 };
+
 export type View = {
     x: number;
     y: number;
@@ -158,8 +161,17 @@ export function show(state: AppState) {
         ctx.fillStyle = colors.text;
         ctx.fillText(item.title, x, y);
 
+        if (item.videoId) {
+            const m2 = ctx.measureText("f");
+            const h = m2.fontBoundingBoxAscent + m2.fontBoundingBoxDescent;
+            const cursorHeight = h * typography.lineHeight;
+            ctx.fillStyle = colors.videoItemStripe;
+            const cursorY = y - (h * typography.lineHeight) / 2;
+            ctx.fillRect(0, cursorY, 2, cursorHeight);
+        }
+
         if (item.children.length > 0 && !item.isOpen && item != state.focused) {
-            const iconSize = level == 0 ? 3 : 2;
+            const iconSize = level == 0 ? 4 : 3;
             ctx.fillStyle = colors.nonEmptyClosedIcon;
             fillSquareAtCenter(x - 7, y, iconSize);
         }

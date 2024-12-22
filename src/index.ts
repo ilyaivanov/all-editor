@@ -11,6 +11,8 @@ import {
 } from "./persistance.storage";
 import { searchInit } from "./shitcode/searchModal";
 import { quickSearchState } from "./shitcode/quickSearch";
+import { youtubeIframeId } from "./player/youtubePlayer";
+import { createPlayerElem } from "./player/player";
 
 window.addEventListener("resize", () => {
     onResize();
@@ -152,3 +154,5 @@ if (process.env.DEBUG && url.searchParams.get("test") != null) {
 } else {
     render();
 }
+
+document.body.appendChild(createPlayerElem());

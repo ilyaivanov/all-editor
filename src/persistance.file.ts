@@ -104,6 +104,7 @@ function parseLine(line: string): { level: number; item: Item } {
 
 const map: Record<string, (item: Item, value: string | undefined) => void> = {
     "/c": (item) => (item.isOpen = false),
+    "/vid": (item, value) => (item.videoId = value),
 };
 
 function sarializeToFile(root: Item) {
@@ -136,6 +137,7 @@ function formatItemAttributes(item: Item): string {
     const atrs: string[] = [];
 
     if (item.children.length > 0 && !item.isOpen) atrs.push("c");
+    if (item.videoId) atrs.push("vid:" + item.videoId);
 
     if (atrs.length > 0) return atrs.map((atr) => "/" + atr).join(" ");
     return "";
