@@ -270,8 +270,8 @@ function removeSelectedItem() {
 
 export function changeSelected(item: Item | undefined) {
     if (item && isSameOrParentOf(state.focused, item)) {
+        if (state.selectedItem != item) state.position = 0;
         state.selectedItem = item;
-        state.position = 0;
     }
 }
 
