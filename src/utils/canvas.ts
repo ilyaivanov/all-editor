@@ -37,3 +37,8 @@ export function setFontMonospace(size: number, weight = 400) {
 export function fillSquareAtCenter(x: number, y: number, size: number) {
     ctx.fillRect(x - size / 2, y - size / 2, size, size);
 }
+export function fillCircleAtCenter(x: number, y: number, r: number) {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+}

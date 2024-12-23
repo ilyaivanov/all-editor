@@ -23,6 +23,7 @@ export function loadItemsFromLocalStorage(): Item | undefined {
 
 function replacer(key: keyof Item, value: unknown) {
     if (key == "parent") return undefined;
+    if (key == "nextPageForPlaylist") return undefined;
     else return value;
 }
 

@@ -8,6 +8,13 @@ export type Item = {
     channelId?: string;
     playlistId?: string;
     image?: string;
+    channelTitle?: string;
+    isLoading?: boolean;
+
+    playlistCount?: number;
+    playlistLoaded?: number;
+    nextPageToken?: string;
+    nextPageForPlaylist?: Item;
 };
 
 export function item(title: string, children: Item[] = []): Item {

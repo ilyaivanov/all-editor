@@ -2,7 +2,13 @@ import type { AppState } from "./index";
 import { viewModal } from "./shitcode/searchModal";
 import { viewQuickSearch } from "./shitcode/quickSearch";
 import { getPathToParent, isRoot, Item } from "./tree/tree";
-import { ctx, fillSquareAtCenter, setFont, view } from "./utils/canvas";
+import {
+    ctx,
+    fillCircleAtCenter,
+    fillSquareAtCenter,
+    setFont,
+    view,
+} from "./utils/canvas";
 import { lerp } from "./utils/math";
 import { drawFooter } from "./footer";
 
@@ -43,6 +49,8 @@ export const colors = {
     cursorInsertMode: "rgb(200, 20, 20)",
 
     videoItemStripe: "rgb(160, 10, 10)",
+    playlistItemStripe: "rgb(10, 160, 10)",
+    channelItemStripe: "rgb(40, 40, 200)",
 
     //modal
     modalBg: "#1c1c1c",
@@ -160,14 +168,27 @@ export function show(state: AppState) {
         setFont(fontSize, fontWeight);
 
         ctx.fillStyle = colors.text;
+        ctx.textAlign = "left";
         ctx.fillText(item.title, x, y);
 
-        if (item.videoId) {
+        if (item.channelTitle) {
+            let label = item.channelTitle;
+            if (item.playlistCount && item.playlistLoaded)
+                label =
+                    `${item.playlistLoaded} / ${item.playlistCount}  ` + label;
+
+            ctx.textAlign = "right";
+            ctx.fillStyle = colors.footerText;
+            ctx.fillText(label, view.x - 10, y);
+        }
+
+        if (item.videoId || item.channelId || item.playlistId) {
             const m2 = ctx.measureText("f");
             const h = m2.fontBoundingBoxAscent + m2.fontBoundingBoxDescent;
             const cursorHeight = h * typography.lineHeight;
-            ctx.fillStyle = colors.videoItemStripe;
+            ctx.fillStyle = getItemTypeColor(item);
             const cursorY = y - (h * typography.lineHeight) / 2;
+            ctx.fillRect(0, cursorY, 2, cursorHeight);
             ctx.fillRect(0, cursorY, 2, cursorHeight);
         }
 
@@ -175,6 +196,11 @@ export function show(state: AppState) {
             const iconSize = level == 0 ? 4 : 3;
             ctx.fillStyle = colors.nonEmptyClosedIcon;
             fillSquareAtCenter(x - 7, y, iconSize);
+        }
+
+        if (item.isLoading) {
+            ctx.fillStyle = getItemTypeColor(item);
+            fillCircleAtCenter(x - 7, y, 2);
         }
     }
 
@@ -203,4 +229,11 @@ function drawScrollBar(state: AppState) {
         ctx.fillStyle = colors.scrollbar;
         ctx.fillRect(view.x - scrollWidth, scrollY, scrollWidth, scrollHeight);
     }
+}
+
+function getItemTypeColor(item: Item) {
+    if (item.videoId) return colors.videoItemStripe;
+    else if (item.playlistId) return colors.playlistItemStripe;
+    else if (item.channelId) return colors.channelItemStripe;
+    return "white";
 }

@@ -25,6 +25,7 @@ import { saveItemsToLocalStorage } from "./persistance.storage";
 import { handleModalKey, showModal } from "./shitcode/searchModal";
 import { quickSearchKeyPress, showQuickSearch } from "./shitcode/quickSearch";
 import { pause, play, resume } from "./player/youtubePlayer";
+import { loadNextPage, loadPlaylist } from "./player/loading";
 
 function doesHandlerMatch(
     e: KeyboardEvent,
@@ -120,14 +121,15 @@ const normalModeHandlers = [
     { key: "Enter", fn: breakItem },
 
     //player
-    { key: "Space", fn: playSelected },
+    { key: "Space", fn: onSpacePress },
     { key: "KeyX", fn: togglePlay },
     { key: "KeyC", fn: playNext },
     { key: "KeyZ", fn: playPrev },
 ];
 
-function playSelected() {
-    playItem(state.selectedItem);
+function onSpacePress() {
+    if (state.selectedItem.videoId) playItem(state.selectedItem);
+    else if (state.selectedItem.nextPageToken) loadNextPage(state.selectedItem);
 }
 
 function playItem(item: Item) {
@@ -386,6 +388,9 @@ function goRight() {
         editTree(state, changes.openItem(selectedItem));
     } else if (selectedItem.children.length > 0)
         changeSelected(selectedItem.children[0]);
+    else if (selectedItem.playlistId) {
+        loadPlaylist(selectedItem);
+    }
 }
 
 function goDown() {
