@@ -105,6 +105,9 @@ function parseLine(line: string): { level: number; item: Item } {
 const map: Record<string, (item: Item, value: string | undefined) => void> = {
     "/c": (item) => (item.isOpen = false),
     "/vid": (item, value) => (item.videoId = value),
+    "/channel": (item, value) => (item.channelId = value),
+    "/playlist": (item, value) => (item.playlistId = value),
+    "/img": (item, value) => (item.image = value),
 };
 
 function sarializeToFile(root: Item) {
@@ -138,6 +141,9 @@ function formatItemAttributes(item: Item): string {
 
     if (item.children.length > 0 && !item.isOpen) atrs.push("c");
     if (item.videoId) atrs.push("vid:" + item.videoId);
+    if (item.channelId) atrs.push("channel:" + item.videoId);
+    if (item.playlistId) atrs.push("playlist:" + item.videoId);
+    if (item.image) atrs.push("img:" + item.videoId);
 
     if (atrs.length > 0) return atrs.map((atr) => "/" + atr).join(" ");
     return "";

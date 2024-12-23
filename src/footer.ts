@@ -23,28 +23,26 @@ export function drawFooter(state: AppState) {
 
     if (path.length > 0) msg = " / " + msg;
 
+    const footerCenter = view.y - spacings.footerHeight / 2;
+
     const width = ctx.measureText(msg).width;
     const footerTextLeft = 10;
-    ctx.fillText(msg, footerTextLeft, view.y - spacings.footerHeight / 2);
+    ctx.fillText(msg, footerTextLeft, footerCenter);
 
     ctx.fillStyle = colors.footerTextFocus;
 
     if (!isRoot(state.focused))
-        ctx.fillText(
-            state.focused.title,
-            footerTextLeft + width,
-            view.y - spacings.footerHeight / 2
-        );
+        ctx.fillText(state.focused.title, footerTextLeft + width, footerCenter);
 
-    if (state.playerTimeLabel) {
+    if (state.playerTimeLabel && state.itemPlaying) {
         ctx.textAlign = "right";
         setFontMonospace(11);
         ctx.fillStyle = colors.footerText;
-        ctx.fillText(
-            state.playerTimeLabel,
-            view.x - 5,
-            view.y - spacings.footerHeight / 2
-        );
+
+        const textToShow =
+            state.itemPlaying.title + " " + state.playerTimeLabel;
+
+        ctx.fillText(textToShow, view.x - 10, footerCenter);
     }
 
     ctx.restore();

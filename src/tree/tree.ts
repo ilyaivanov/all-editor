@@ -3,7 +3,11 @@ export type Item = {
     title: string;
     children: Item[];
     isOpen: boolean | undefined;
+
     videoId?: string;
+    channelId?: string;
+    playlistId?: string;
+    image?: string;
 };
 
 export function item(title: string, children: Item[] = []): Item {
