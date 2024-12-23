@@ -18,7 +18,7 @@ export const typography = {
     focusWeight: 800,
 
     firstLevelFontSize: 14,
-    weightFirstLevel: 600,
+    weightFirstLevel: 500,
 
     otherLevelFontSize: 12,
     weightOtherLevel: 400,
