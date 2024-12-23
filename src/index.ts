@@ -11,7 +11,7 @@ import {
 } from "./persistance.storage";
 import { searchInit } from "./shitcode/searchModal";
 import { quickSearchState } from "./shitcode/quickSearch";
-import { youtubeIframeId } from "./player/youtubePlayer";
+import { PlayerProgressState, youtubeIframeId } from "./player/youtubePlayer";
 import { createPlayerElem } from "./player/player";
 
 window.addEventListener("resize", () => {
@@ -30,6 +30,7 @@ export const initialState = {
     root: empty,
     focused: empty,
     selectedItem: empty,
+    itemPlaying: undefined as Item | undefined,
     mode: "normal" as Mode,
 
     selectedItemTitleBeforeInsertMode: "",
@@ -46,6 +47,10 @@ export const initialState = {
 
     searchModal: searchInit,
     quickSearch: quickSearchState,
+
+    playerTimeLabel: "",
+    playerTimeSeconds: -1,
+    playerState: "pause" as "play" | "pause",
 };
 
 const rootIfNoStored = createRoot([
@@ -76,9 +81,7 @@ const rootIfNoStored = createRoot([
 
 const data: Item = loadItemsFromLocalStorage() || rootIfNoStored;
 
-export const state = {
-    ...initialState,
-};
+export const state = { ...initialState };
 
 const userSettings = loadUserSettings() || {
     itemTitleFocused: "",

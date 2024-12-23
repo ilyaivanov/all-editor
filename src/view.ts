@@ -4,6 +4,7 @@ import { viewQuickSearch } from "./shitcode/quickSearch";
 import { getPathToParent, isRoot, Item } from "./tree/tree";
 import { ctx, fillSquareAtCenter, setFont, view } from "./utils/canvas";
 import { lerp } from "./utils/math";
+import { drawFooter } from "./footer";
 
 export const typography = {
     font: `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -202,37 +203,4 @@ function drawScrollBar(state: AppState) {
         ctx.fillStyle = colors.scrollbar;
         ctx.fillRect(view.x - scrollWidth, scrollY, scrollWidth, scrollHeight);
     }
-}
-
-function drawFooter(state: AppState) {
-    ctx.fillStyle = colors.footerBg;
-    const height = spacings.footerHeight;
-    ctx.fillRect(0, view.y - height, view.x, height);
-
-    ctx.fillStyle = colors.footerText;
-    ctx.textBaseline = "middle";
-    setFont(13);
-
-    const path = getPathToParent(state.focused)
-        .reverse()
-        .map((i) => i.title);
-
-    path.splice(path.length - 1, 1);
-
-    let msg = path.join(" / ") + " / ";
-
-    if (path.length > 0) msg = " / " + msg;
-
-    const width = ctx.measureText(msg).width;
-    const footerTextLeft = 10;
-    ctx.fillText(msg, footerTextLeft, view.y - spacings.footerHeight / 2);
-
-    ctx.fillStyle = colors.footerTextFocus;
-
-    if (!isRoot(state.focused))
-        ctx.fillText(
-            state.focused.title,
-            footerTextLeft + width,
-            view.y - spacings.footerHeight / 2
-        );
 }

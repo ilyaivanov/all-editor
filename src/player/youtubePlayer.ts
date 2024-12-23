@@ -121,7 +121,8 @@ export const getPlayerProgressState = (): PlayerProgressState => {
 
 export const getDuration = (): number => player.getDuration();
 export const hasVideo = (): boolean => isReady;
-export const seek = (time: number, allowSeekAhead: boolean) => player.seekTo(time, allowSeekAhead);
+export const seek = (time: number, allowSeekAhead: boolean) =>
+    player.seekTo(time, allowSeekAhead);
 export const pause = () => player.pauseVideo();
 export const resume = () => player.playVideo();
 

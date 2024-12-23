@@ -24,7 +24,7 @@ import { loadFromFile, saveToFile } from "./persistance.file";
 import { saveItemsToLocalStorage } from "./persistance.storage";
 import { handleModalKey, showModal } from "./shitcode/searchModal";
 import { quickSearchKeyPress, showQuickSearch } from "./shitcode/quickSearch";
-import { play } from "./player/youtubePlayer";
+import { pause, play, resume } from "./player/youtubePlayer";
 
 function doesHandlerMatch(
     e: KeyboardEvent,
@@ -97,7 +97,7 @@ const normalModeHandlers = [
     { key: "KeyL", fn: goRight },
     { key: "KeyI", fn: enterInsertMode },
     { key: "Backspace", fn: removeCharFromLeft },
-    { key: "KeyX", fn: removeCurrentChar },
+    // { key: "KeyX", fn: removeCurrentChar },
     { key: "KeyO", fn: addItemBelowAndStartEdit },
     { key: "KeyO", fn: addItemAboveAndStartEdit, shift: true },
     { key: "KeyO", fn: addItemInsideAndStartEdit, ctrl: true },
@@ -121,10 +121,43 @@ const normalModeHandlers = [
 
     //player
     { key: "Space", fn: playSelected },
+    { key: "KeyX", fn: togglePlay },
+    { key: "KeyC", fn: playNext },
+    { key: "KeyZ", fn: playPrev },
 ];
 
 function playSelected() {
-    if (state.selectedItem.videoId) play(state.selectedItem.videoId);
+    playItem(state.selectedItem);
+}
+
+function playItem(item: Item) {
+    if (item.videoId) {
+        state.itemPlaying = item;
+        play(item.videoId);
+        state.playerState = "play";
+    }
+}
+function togglePlay() {
+    if (state.playerState == "pause") {
+        state.playerState = "play";
+        resume();
+    } else {
+        state.playerState = "pause";
+        pause();
+    }
+}
+
+function playNext() {
+    if (state.itemPlaying) {
+        const below = getItemBelow(state, state.itemPlaying);
+        if (below) playItem(below);
+    }
+}
+function playPrev() {
+    if (state.itemPlaying) {
+        const below = getItemAbove(state.itemPlaying);
+        if (below) playItem(below);
+    }
 }
 
 function closeAll() {
