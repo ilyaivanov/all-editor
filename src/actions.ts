@@ -74,6 +74,9 @@ const insertModeHandlers = [
     { key: "KeyK", fn: () => moveSelectedItem(state, "up"), alt: true },
     { key: "KeyL", fn: () => moveSelectedItem(state, "right"), alt: true },
     { key: "KeyH", fn: () => moveSelectedItem(state, "left"), alt: true },
+
+    { key: "KeyV", fn: pasteSelectedItem, meta: true },
+    { key: "KeyC", fn: copySelectedItem, meta: true },
 ];
 
 const normalModeHandlers = [
@@ -127,7 +130,21 @@ const normalModeHandlers = [
     { key: "KeyC", fn: playNext },
 
     { key: "KeyC", fn: extractChannel, alt: true, shift: true },
+
+    { key: "KeyV", fn: pasteSelectedItem, meta: true },
+    { key: "KeyC", fn: copySelectedItem, meta: true },
 ];
+
+async function pasteSelectedItem() {
+    let textToPaste = await navigator.clipboard.readText();
+    textToPaste = textToPaste.replace("\n", "");
+    insertStr(textToPaste);
+}
+
+async function copySelectedItem() {
+    await navigator.clipboard.writeText(state.selectedItem.title);
+    // showMessage(textToCopy);
+}
 
 function extractChannel() {
     const { selectedItem } = state;
@@ -432,7 +449,7 @@ export function removeChar(str: string, at: number) {
 function insertStr(str: string) {
     const { selectedItem, position } = state;
     selectedItem.title = insertStrAt(selectedItem.title, str, position);
-    state.position++;
+    state.position += str.length;
 }
 
 function goToNextWord() {
