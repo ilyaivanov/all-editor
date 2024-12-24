@@ -165,11 +165,6 @@ export function show(state: AppState) {
     ctx.textBaseline = "middle";
     for (let i = 0; i < state.views.length; i++) {
         const { x, y, fontSize, fontWeight, item, level } = state.views[i];
-        setFont(fontSize, fontWeight);
-
-        ctx.fillStyle = colors.text;
-        ctx.textAlign = "left";
-        ctx.fillText(item.title, x, y);
 
         let rightLabel = "";
 
@@ -183,11 +178,18 @@ export function show(state: AppState) {
             rightLabel += " " + item.channelTitle;
         }
 
+        setFont(typography.otherLevelFontSize, typography.weightOtherLevel);
+
         if (rightLabel.length > 0) {
             ctx.textAlign = "right";
             ctx.fillStyle = colors.footerText;
             ctx.fillText(rightLabel, view.x - 10, y);
         }
+
+        setFont(fontSize, fontWeight);
+        ctx.fillStyle = colors.text;
+        ctx.textAlign = "left";
+        ctx.fillText(item.title, x, y);
 
         if (item.videoId || item.channelId || item.playlistId) {
             const m2 = ctx.measureText("f");
