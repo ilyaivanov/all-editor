@@ -51,12 +51,14 @@ export async function getChannelInfo(
         mapYoutubeItem(item)
     );
 
-    // if (videosInfo.playlistId) {
-    //     const all = createItem("yt-playlist", "All videos");
-    //     all.itemId = videosInfo.playlistId;
+    if (videosInfo.playlistId) {
+        const all = createItem("All videos");
+        all.playlistId = videosInfo.playlistId;
+        all.channelId = channelId;
+        all.channelTitle = items[0].channelTitle;
 
-    //     items.unshift(all);
-    // }
+        items.unshift(all);
+    }
 
     return {
         items,

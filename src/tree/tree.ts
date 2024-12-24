@@ -11,10 +11,10 @@ export type Item = {
     channelTitle?: string;
     isLoading?: boolean;
 
-    playlistCount?: number;
-    playlistLoaded?: number;
+    remoteTotalItemsCount?: number;
+    remoteLoadedItemsCount?: number;
     nextPageToken?: string;
-    nextPageForPlaylist?: Item;
+    nextPageForItem?: Item;
 };
 
 export function item(title: string, children: Item[] = []): Item {

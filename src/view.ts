@@ -23,8 +23,8 @@ export const typography = {
     focusLevelFontSize: 20,
     focusWeight: 800,
 
-    firstLevelFontSize: 14,
-    weightFirstLevel: 500,
+    firstLevelFontSize: 12,
+    weightFirstLevel: 400,
 
     otherLevelFontSize: 12,
     weightOtherLevel: 400,
@@ -171,15 +171,22 @@ export function show(state: AppState) {
         ctx.textAlign = "left";
         ctx.fillText(item.title, x, y);
 
-        if (item.channelTitle) {
-            let label = item.channelTitle;
-            if (item.playlistCount && item.playlistLoaded)
-                label =
-                    `${item.playlistLoaded} / ${item.playlistCount}  ` + label;
+        let rightLabel = "";
 
+        if (item.remoteTotalItemsCount && item.remoteLoadedItemsCount) {
+            rightLabel =
+                `${item.remoteLoadedItemsCount} / ${item.remoteTotalItemsCount}  ` +
+                rightLabel;
+        }
+
+        if (item.channelTitle) {
+            rightLabel += " " + item.channelTitle;
+        }
+
+        if (rightLabel.length > 0) {
             ctx.textAlign = "right";
             ctx.fillStyle = colors.footerText;
-            ctx.fillText(label, view.x - 10, y);
+            ctx.fillText(rightLabel, view.x - 10, y);
         }
 
         if (item.videoId || item.channelId || item.playlistId) {

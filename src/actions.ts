@@ -25,7 +25,7 @@ import { saveItemsToLocalStorage } from "./persistance.storage";
 import { handleModalKey, showModal } from "./shitcode/searchModal";
 import { quickSearchKeyPress, showQuickSearch } from "./shitcode/quickSearch";
 import { pause, play, resume } from "./player/youtubePlayer";
-import { loadNextPage, loadPlaylist } from "./player/loading";
+import { loadNextPage, loadItem } from "./player/loading";
 
 function doesHandlerMatch(
     e: KeyboardEvent,
@@ -122,10 +122,27 @@ const normalModeHandlers = [
 
     //player
     { key: "Space", fn: onSpacePress },
+    { key: "KeyZ", fn: playPrev },
     { key: "KeyX", fn: togglePlay },
     { key: "KeyC", fn: playNext },
-    { key: "KeyZ", fn: playPrev },
+
+    { key: "KeyC", fn: extractChannel, alt: true, shift: true },
 ];
+
+function extractChannel() {
+    const { selectedItem } = state;
+    if (selectedItem.channelId && selectedItem.channelTitle) {
+        const channelItem = item(selectedItem.channelTitle);
+        channelItem.channelId = selectedItem.channelId;
+        const context = selectedItem.parent.children;
+        const index = context.indexOf(selectedItem);
+
+        context.splice(index, 0, channelItem);
+        channelItem.parent = selectedItem.parent;
+
+        state.selectedItem = channelItem;
+    }
+}
 
 function onSpacePress() {
     if (state.selectedItem.videoId) playItem(state.selectedItem);
@@ -388,8 +405,13 @@ function goRight() {
         editTree(state, changes.openItem(selectedItem));
     } else if (selectedItem.children.length > 0)
         changeSelected(selectedItem.children[0]);
-    else if (selectedItem.playlistId) {
-        loadPlaylist(selectedItem);
+    else if (selectedItem.nextPageToken) {
+        loadNextPage(state.selectedItem);
+    } else if (
+        selectedItem.playlistId ||
+        (selectedItem.channelId && !selectedItem.videoId)
+    ) {
+        loadItem(selectedItem);
     }
 }
 

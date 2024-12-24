@@ -1,7 +1,7 @@
 import { render, state } from "../index";
 import { saveItemsToLocalStorage } from "../persistance.storage";
 import { item, Item } from "../tree/tree";
-import { findPlaylistVideos, PageInfo } from "./youtubeApi";
+import { findPlaylistVideos, getChannelInfo, PageInfo } from "./youtubeApi";
 
 function createLoadModeItem(base: Item, nextPageToken: string) {
     const loadMore = item("Load more... ");
@@ -11,74 +11,86 @@ function createLoadModeItem(base: Item, nextPageToken: string) {
 
     loadMore.channelTitle = base.channelTitle;
     loadMore.channelId = base.channelId;
-    loadMore.nextPageForPlaylist = base;
+    loadMore.nextPageForItem = base;
 
     return loadMore;
 }
 
 function updatePlaylistItemsCount(playlistItem: Item, pageInfo: PageInfo) {
-    playlistItem.playlistCount = pageInfo.totalResults;
-    playlistItem.playlistLoaded = Math.min(
-        (playlistItem.playlistLoaded || 0) + pageInfo.resultsPerPage,
-        playlistItem.playlistCount
+    playlistItem.remoteTotalItemsCount = pageInfo.totalResults;
+    playlistItem.remoteLoadedItemsCount = Math.min(
+        (playlistItem.remoteLoadedItemsCount || 0) + pageInfo.resultsPerPage,
+        playlistItem.remoteTotalItemsCount
     );
 }
 
-export async function loadPlaylist(playlistItem: Item) {
-    if (playlistItem.playlistId) {
-        playlistItem.isLoading = true;
-        const vids = await findPlaylistVideos(playlistItem.playlistId);
-        playlistItem.isLoading = false;
+export async function loadItem(itemToLoad: Item) {
+    const loadingFunction = itemToLoad.playlistId
+        ? () => findPlaylistVideos(itemToLoad.playlistId!)
+        : () => getChannelInfo(itemToLoad.channelId!);
 
-        updatePlaylistItemsCount(playlistItem, vids.pageInfo);
+    itemToLoad.isLoading = true;
+    const response = await loadingFunction();
+    itemToLoad.isLoading = false;
 
-        const newItems = [...vids.items];
+    updatePlaylistItemsCount(itemToLoad, response.pageInfo);
 
-        if (vids.pageInfo.nextPageToken)
-            newItems.push(
-                createLoadModeItem(playlistItem, vids.pageInfo.nextPageToken)
-            );
+    const newItems = [...response.items];
 
-        playlistItem.children.push(...newItems);
-        newItems.forEach((i) => (i.parent = playlistItem));
-        playlistItem.isOpen = true;
-
-        // saveItemsToLocalStorage(state);
-        render();
+    if (response.pageInfo.nextPageToken) {
+        const loadMore = createLoadModeItem(
+            itemToLoad,
+            response.pageInfo.nextPageToken
+        );
+        newItems.push(loadMore);
     }
+
+    itemToLoad.children.push(...newItems);
+    newItems.forEach((i) => (i.parent = itemToLoad));
+    itemToLoad.isOpen = true;
+
+    saveItemsToLocalStorage(state);
+    render();
 }
 
 export async function loadNextPage(loadMoreItem: Item) {
-    if (loadMoreItem.playlistId && loadMoreItem.nextPageToken) {
-        const playlistItem = loadMoreItem.nextPageForPlaylist;
+    if (!loadMoreItem.nextPageToken) return;
+    const loader = loadMoreItem.playlistId
+        ? () =>
+              findPlaylistVideos(
+                  loadMoreItem.playlistId!,
+                  loadMoreItem.nextPageToken
+              )
+        : () =>
+              getChannelInfo(
+                  loadMoreItem.channelId!,
+                  loadMoreItem.nextPageToken
+              );
 
-        loadMoreItem.isLoading = true;
-        const vids = await findPlaylistVideos(
-            loadMoreItem.playlistId,
-            loadMoreItem.nextPageToken
-        );
-        loadMoreItem.isLoading = false;
+    const { nextPageForItem } = loadMoreItem;
 
-        if (playlistItem) {
-            updatePlaylistItemsCount(playlistItem, vids.pageInfo);
-        }
+    loadMoreItem.isLoading = true;
+    const vids = await loader();
+    loadMoreItem.isLoading = false;
 
-        const index = loadMoreItem.parent.children.indexOf(loadMoreItem);
-
-        const newItems = [...vids.items];
-
-        if (vids.pageInfo.nextPageToken && playlistItem)
-            newItems.push(
-                createLoadModeItem(playlistItem, vids.pageInfo.nextPageToken)
-            );
-
-        loadMoreItem.parent.children.splice(index, 1, ...newItems);
-        newItems.forEach((i) => (i.parent = loadMoreItem.parent));
-
-        if (state.selectedItem == loadMoreItem)
-            state.selectedItem = newItems[0];
-
-        // saveItemsToLocalStorage(state);
-        render();
+    if (nextPageForItem) {
+        updatePlaylistItemsCount(nextPageForItem, vids.pageInfo);
     }
+
+    const index = loadMoreItem.parent.children.indexOf(loadMoreItem);
+
+    const newItems = [...vids.items];
+
+    if (vids.pageInfo.nextPageToken && nextPageForItem)
+        newItems.push(
+            createLoadModeItem(nextPageForItem, vids.pageInfo.nextPageToken)
+        );
+
+    loadMoreItem.parent.children.splice(index, 1, ...newItems);
+    newItems.forEach((i) => (i.parent = loadMoreItem.parent));
+
+    if (state.selectedItem == loadMoreItem) state.selectedItem = newItems[0];
+
+    saveItemsToLocalStorage(state);
+    render();
 }
