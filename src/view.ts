@@ -23,11 +23,8 @@ export const typography = {
     focusLevelFontSize: 20,
     focusWeight: 800,
 
-    firstLevelFontSize: 12,
-    weightFirstLevel: 400,
-
-    otherLevelFontSize: 12,
-    weightOtherLevel: 400,
+    fontSize: 12,
+    fontWeight: 400,
 };
 
 export const spacings = {
@@ -66,7 +63,6 @@ export type View = {
     item: Item;
     fontSize: number;
     fontWeight: number;
-    level: number;
 };
 
 export function buildViews(state: AppState) {
@@ -92,18 +88,10 @@ export function buildViews(state: AppState) {
         const lineX = left + Math.max(level, 0) * step;
 
         const fontSize =
-            level == -1
-                ? typography.focusLevelFontSize
-                : level == 0
-                  ? typography.firstLevelFontSize
-                  : typography.otherLevelFontSize;
+            level == -1 ? typography.focusLevelFontSize : typography.fontSize;
 
         const weight =
-            level == -1
-                ? typography.focusWeight
-                : level == 0
-                  ? typography.weightFirstLevel
-                  : typography.weightOtherLevel;
+            level == -1 ? typography.focusWeight : typography.fontWeight;
 
         setFont(fontSize, weight);
 
@@ -114,7 +102,6 @@ export function buildViews(state: AppState) {
 
         state.views.push({
             item,
-            level,
             fontSize,
             fontWeight: weight,
             x: lineX,
@@ -168,7 +155,7 @@ export function show(state: AppState) {
 
     ctx.textBaseline = "middle";
     for (let i = 0; i < state.views.length; i++) {
-        const { x, y, fontSize, fontWeight, item, level } = state.views[i];
+        const { x, y, fontSize, fontWeight, item } = state.views[i];
 
         let rightLabel = "";
 
@@ -182,7 +169,7 @@ export function show(state: AppState) {
             rightLabel += " " + item.channelTitle;
         }
 
-        setFont(typography.otherLevelFontSize, typography.weightOtherLevel);
+        setFont(typography.fontSize, typography.fontWeight);
 
         if (rightLabel.length > 0) {
             ctx.textAlign = "right";
@@ -206,7 +193,7 @@ export function show(state: AppState) {
         }
 
         if (item.children.length > 0 && !item.isOpen && item != state.focused) {
-            const iconSize = level == 0 ? 4 : 3;
+            const iconSize = 3;
             ctx.fillStyle = colors.nonEmptyClosedIcon;
             fillSquareAtCenter(x - 7, y, iconSize);
         }

@@ -263,9 +263,7 @@ function jumpToSibling(direction: "up" | "down" | "left" | "right") {
     } else if (direction == "up") {
         if (index > 0) changeSelected(context[index - 1]);
     } else if (direction == "left") {
-        if (isSameOrParentOf(state.focused, state.selectedItem.parent)) {
-            changeSelected(state.selectedItem.parent);
-        }
+        changeSelected(state.selectedItem.parent);
     } else if (direction == "right") {
         if (state.selectedItem.children.length > 0) {
             if (state.focused != state.selectedItem) {
@@ -399,7 +397,7 @@ function removeSelectedItem() {
 }
 
 export function changeSelected(item: Item | undefined) {
-    if (item && isSameOrParentOf(state.focused, item)) {
+    if (item && isSameOrParentOf(state.focused, item) && !isRoot(item)) {
         if (state.selectedItem != item) state.position = 0;
         state.selectedItem = item;
     }
