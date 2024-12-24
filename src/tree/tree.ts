@@ -124,13 +124,15 @@ export function insertAsLastChild(parent: Item, item: Item) {
     item.parent = parent;
 }
 
-export function forEachChild(parent: Item, fn: (item: Item) => void) {
-    const stack = [...parent.children];
+export function forEachChildBFS(parent: Item, fn: (item: Item) => void) {
+    const stack = [...parent.children].reverse();
     while (stack.length > 0) {
         const item = stack.pop()!;
 
+        console.log(item);
         fn(item);
 
-        if (item.children.length > 0) stack.push(...item.children);
+        if (item.children.length > 0)
+            stack.unshift(...[...item.children].reverse());
     }
 }

@@ -1,6 +1,6 @@
 import { state } from "./index";
 import {
-    forEachChild,
+    forEachChildBFS,
     isRoot,
     isSameOrParentOf,
     item,
@@ -207,7 +207,7 @@ function playPrev() {
 
 function closeAll() {
     const closeEdits: Edit[] = [];
-    forEachChild(state.selectedItem, (i) => {
+    forEachChildBFS(state.selectedItem, (i) => {
         if (i.isOpen) closeEdits.push(changes.closeItem(i));
     });
     if (state.selectedItem)
@@ -218,7 +218,7 @@ function closeAll() {
 
 function openAll() {
     const openEdits: Edit[] = [];
-    forEachChild(state.selectedItem, (i) => {
+    forEachChildBFS(state.selectedItem, (i) => {
         if (!i.isOpen && i.children.length > 0)
             openEdits.push(changes.openItem(i));
     });
