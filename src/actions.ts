@@ -20,7 +20,7 @@ import {
 } from "./undoRedo";
 import { moveSelectedItem } from "./movement";
 import { clampOffset } from "./scroll";
-import { loadFromFile, saveToFile } from "./persistance.file";
+import { assignAttributes, loadFromFile, saveToFile } from "./persistance.file";
 import { saveItemsToLocalStorage } from "./persistance.storage";
 import { handleModalKey, showModal } from "./shitcode/searchModal";
 import { quickSearchKeyPress, showQuickSearch } from "./shitcode/quickSearch";
@@ -249,6 +249,8 @@ function jumpToSibling(direction: "up" | "down" | "left" | "right") {
     }
 }
 function exitRename() {
+    assignAttributes(state.selectedItem.title, state.selectedItem);
+
     if (state.isItemAddedBeforeInsertMode) {
         state.isItemAddedBeforeInsertMode = false;
         saveItemsToLocalStorage(state);
@@ -434,8 +436,9 @@ function goRight() {
     else if (selectedItem.nextPageToken) {
         loadNextPage(state.selectedItem);
     } else if (
-        selectedItem.playlistId ||
-        (selectedItem.channelId && !selectedItem.videoId)
+        (selectedItem.playlistId ||
+            (selectedItem.channelId && !selectedItem.videoId)) &&
+        !selectedItem.isLoading
     ) {
         loadItem(selectedItem);
     }

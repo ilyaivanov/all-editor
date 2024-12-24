@@ -85,6 +85,13 @@ function parseLine(line: string): { level: number; item: Item } {
     //settings this to undefined, because I want to know if Item is explicitly /closed in a file
     res.isOpen = undefined;
 
+    assignAttributes(line, res);
+
+    return { level, item: res };
+}
+
+export function assignAttributes(line: string, item: Item) {
+    debugger;
     let words = line
         .trimStart()
         .split(" ")
@@ -92,14 +99,13 @@ function parseLine(line: string): { level: number; item: Item } {
             const [key, value] = word.split(":");
             const action = map[key];
             if (action) {
-                action(res, value);
+                action(item, value);
                 return false;
             }
             return true;
         });
 
-    res.title = words.join(" ");
-    return { level, item: res };
+    item.title = words.join(" ");
 }
 
 const map: Record<string, (item: Item, value: string | undefined) => void> = {
