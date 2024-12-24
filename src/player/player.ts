@@ -38,3 +38,14 @@ document.addEventListener("video-progress", () => {
         }
     }
 });
+
+export function hideVideo() {
+    const playerContainer = document.getElementById(youtubeIframeId);
+    if (playerContainer) {
+        playerContainer.style.visibility = "hidden";
+    }
+}
+export function showVideo() {
+    const playerContainer = document.getElementById(youtubeIframeId);
+    if (playerContainer) playerContainer.style.removeProperty("visibility");
+}

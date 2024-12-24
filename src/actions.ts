@@ -26,6 +26,7 @@ import { handleModalKey, showModal } from "./shitcode/searchModal";
 import { quickSearchKeyPress, showQuickSearch } from "./shitcode/quickSearch";
 import { pause, play, resume } from "./player/youtubePlayer";
 import { loadNextPage, loadItem } from "./player/loading";
+import { hideVideo, showVideo } from "./player/player";
 
 function doesHandlerMatch(
     e: KeyboardEvent,
@@ -133,7 +134,15 @@ const normalModeHandlers = [
 
     { key: "KeyV", fn: pasteSelectedItem, meta: true },
     { key: "KeyC", fn: copySelectedItem, meta: true },
+
+    { key: "KeyV", fn: toggleVideoVisibility },
 ];
+
+function toggleVideoVisibility() {
+    state.isVideoHidden = !state.isVideoHidden;
+    if (state.isVideoHidden) hideVideo();
+    else showVideo();
+}
 
 async function pasteSelectedItem() {
     let textToPaste = await navigator.clipboard.readText();

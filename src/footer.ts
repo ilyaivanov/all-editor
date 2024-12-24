@@ -37,7 +37,10 @@ export function drawFooter(state: AppState) {
     if (state.playerTimeLabel && state.itemPlaying) {
         ctx.textAlign = "right";
         setFontMonospace(11);
-        ctx.fillStyle = colors.footerText;
+        ctx.fillStyle =
+            state.playerState == "play"
+                ? colors.playFooterText
+                : colors.pauseFooterText;
 
         const textToShow =
             state.itemPlaying.title + " " + state.playerTimeLabel;

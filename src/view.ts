@@ -54,6 +54,10 @@ export const colors = {
 
     //modal
     modalBg: "#1c1c1c",
+
+    //footer
+    playFooterText: "rgb(80, 180, 80)",
+    pauseFooterText: "rgb(220, 100, 100)",
 };
 
 export type View = {

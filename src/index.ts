@@ -48,6 +48,7 @@ export const initialState = {
     searchModal: searchInit,
     quickSearch: quickSearchState,
 
+    isVideoHidden: false,
     playerTimeLabel: "",
     playerTimeSeconds: -1,
     playerState: "pause" as "play" | "pause",
