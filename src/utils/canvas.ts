@@ -1,9 +1,8 @@
 import { state } from "./../index";
 import { spacings, typography } from "../view";
 
-const canvas = document.createElement("canvas");
+export const canvas = document.createElement("canvas");
 export const ctx = canvas.getContext("2d")!;
-document.body.appendChild(canvas);
 
 let scale = 0;
 export const view = { x: 0, y: 0 };

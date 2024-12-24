@@ -1,6 +1,6 @@
 import { handleKeyPress, onWheel } from "./actions";
-import { onResize } from "./utils/canvas";
-import { createRoot, findByTitle, findItem, item, Item } from "./tree/tree";
+import { canvas, onResize } from "./utils/canvas";
+import { createRoot, findByTitle, item, Item } from "./tree/tree";
 import { Edit } from "./undoRedo";
 import { buildViews, show, View } from "./view";
 import { scrollToSelectedItem } from "./scroll";
@@ -11,8 +11,7 @@ import {
 } from "./persistance.storage";
 import { searchInit } from "./shitcode/searchModal";
 import { quickSearchState } from "./shitcode/quickSearch";
-import { PlayerProgressState, youtubeIframeId } from "./player/youtubePlayer";
-import { createPlayerElem } from "./player/player";
+import { createPlayerElem, PlayerMode } from "./player/player";
 
 window.addEventListener("resize", () => {
     onResize();
@@ -52,6 +51,8 @@ export const initialState = {
     playerTimeLabel: "",
     playerTimeSeconds: -1,
     playerState: "pause" as "play" | "pause",
+    playerMode: "small" as PlayerMode,
+    brightness: 1,
 };
 
 const rootIfNoStored = createRoot([
@@ -160,3 +161,4 @@ if (process.env.DEBUG && url.searchParams.get("test") != null) {
 }
 
 document.body.appendChild(createPlayerElem());
+document.body.appendChild(canvas);

@@ -10,13 +10,13 @@ import {
 export function createPlayerElem() {
     const playerContainer = document.createElement("div");
     playerContainer.id = youtubeIframeId;
+
     Object.assign(playerContainer.style, {
         position: "fixed",
-        bottom: "40px",
-        right: "40px",
-        height: "250px",
-        width: "600px",
+        filter: "brightness(100%)",
     });
+    setPlayerClass(playerContainer, state.playerMode);
+
     return playerContainer;
 }
 
@@ -45,7 +45,29 @@ export function hideVideo() {
         playerContainer.style.visibility = "hidden";
     }
 }
+
 export function showVideo() {
     const playerContainer = document.getElementById(youtubeIframeId);
     if (playerContainer) playerContainer.style.removeProperty("visibility");
+}
+
+export function onBrightnessChanged(val: number) {
+    const playerContainer = document.getElementById(youtubeIframeId);
+    if (playerContainer) {
+        playerContainer.style.opacity = val.toFixed(2);
+    }
+}
+
+export type PlayerMode = "fullscreen" | "small";
+export function onPlayerModeChanged(mode: PlayerMode) {
+    const playerContainer = document.getElementById(youtubeIframeId);
+    if (!playerContainer) return;
+
+    setPlayerClass(playerContainer, mode);
+}
+
+function setPlayerClass(elem: HTMLElement, mode: PlayerMode) {
+    const isFullscreen = mode == "fullscreen";
+    elem.classList.toggle("small-player", !isFullscreen);
+    elem.classList.toggle("fullscreen-player", isFullscreen);
 }

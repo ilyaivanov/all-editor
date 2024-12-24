@@ -10,12 +10,27 @@
         <style>
             body {
                 margin: 0;
+                background-color: #0c0c0c;
             }
             canvas {
                 display: block;
 
                 /* because macos scroll event is bouncing canvas */
                 position: fixed;
+
+                /* pointer-events: none; */
+            }
+            .fullscreen-player {
+                right: 0px;
+                left: 0px;
+                top: 0px;
+                height: calc(100vh - 20px);
+            }
+            .small-player {
+                bottom: 40px;
+                right: 40px;
+                height: 200px;
+                width: 400px;
             }
         </style>
     </head>

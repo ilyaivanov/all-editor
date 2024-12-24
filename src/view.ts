@@ -135,8 +135,8 @@ export function buildViews(state: AppState) {
 }
 
 export function show(state: AppState) {
-    ctx.fillStyle = colors.bg;
-    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    // ctx.fillStyle = colors.bg;
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
     ctx.save();
 

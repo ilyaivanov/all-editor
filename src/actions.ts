@@ -26,7 +26,12 @@ import { handleModalKey, showModal } from "./shitcode/searchModal";
 import { quickSearchKeyPress, showQuickSearch } from "./shitcode/quickSearch";
 import { pause, play, resume } from "./player/youtubePlayer";
 import { loadNextPage, loadItem } from "./player/loading";
-import { hideVideo, showVideo } from "./player/player";
+import {
+    hideVideo,
+    onBrightnessChanged,
+    onPlayerModeChanged,
+    showVideo,
+} from "./player/player";
 
 function doesHandlerMatch(
     e: KeyboardEvent,
@@ -54,6 +59,17 @@ export async function handleKeyPress(e: KeyboardEvent) {
             if (handler.noDef) e.preventDefault();
 
             await handler.fn();
+        } else if (
+            e.code.startsWith("Digit") &&
+            e.altKey &&
+            !e.metaKey &&
+            !e.ctrlKey &&
+            !e.shiftKey
+        ) {
+            const val = Number.parseInt(e.code.substring("Digit".length)) / 10;
+            if (val == 0) state.brightness = state.brightness == 0 ? 1 : 0;
+            else state.brightness = val;
+            onBrightnessChanged(state.brightness);
         }
     } else {
         const handler = insertModeHandlers.find((h) => doesHandlerMatch(e, h));
@@ -136,6 +152,17 @@ const normalModeHandlers = [
     { key: "KeyC", fn: copySelectedItem, meta: true },
 
     { key: "KeyV", fn: toggleVideoVisibility },
+
+    {
+        key: "KeyM",
+        fn: () => {
+            state.playerMode =
+                state.playerMode == "fullscreen" ? "small" : "fullscreen";
+            onPlayerModeChanged(state.playerMode);
+        },
+        meta: true,
+        noDef: true,
+    },
 ];
 
 function toggleVideoVisibility() {
