@@ -42,13 +42,13 @@ document.addEventListener("video-progress", () => {
 export function hideVideo() {
     const playerContainer = document.getElementById(youtubeIframeId);
     if (playerContainer) {
-        playerContainer.style.visibility = "hidden";
+        playerContainer.style.display = "none";
     }
 }
 
 export function showVideo() {
     const playerContainer = document.getElementById(youtubeIframeId);
-    if (playerContainer) playerContainer.style.removeProperty("visibility");
+    if (playerContainer) playerContainer.style.removeProperty("display");
 }
 
 export function onBrightnessChanged(val: number) {
