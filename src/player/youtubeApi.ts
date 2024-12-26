@@ -109,7 +109,3 @@ function formatProps(props: UrlProps) {
         .map((key) => `${key}=${props[key]}`)
         .join("&");
 }
-
-// https://europe-west1-slapstuk.cloudfunctions.net/getVideos?q=deep%20house
-// https://europe-west1-slapstuk.cloudfunctions.net/getChannelVideos?channelId=UCCWHSZ6VQPr7cnJAF8JbDzA
-// https://europe-west1-slapstuk.cloudfunctions.net/getChannelPlaylists?part=snippet&channelId=UCCWHSZ6VQPr7cnJAF8JbDzA
