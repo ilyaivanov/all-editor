@@ -11,51 +11,8 @@ import {
 } from "./utils/canvas";
 import { lerp } from "./utils/math";
 import { drawFooter } from "./footer";
-
-export const typography = {
-    font: `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-     sans-serif`,
-    font2: "monospace",
-
-    lineHeight: 1.3,
-
-    focusLevelFontSize: 20,
-    focusWeight: 800,
-
-    fontSize: 12,
-    fontWeight: 400,
-};
-
-export const spacings = {
-    footerHeight: 20,
-};
-
-export const colors = {
-    bg: "#0c0c0c",
-    footerBg: "#2c2c2c",
-    text: "#e0e0e0",
-    footerText: "#a0a0a0",
-    footerTextFocus: "#e0e0e0",
-    selectionBg: "#252525",
-    scrollbar: "#204040",
-
-    nonEmptyClosedIcon: "#968037",
-
-    cursorNormalMode: "rgb(20, 200, 20)",
-    cursorInsertMode: "rgb(200, 20, 20)",
-
-    videoItemStripe: "rgb(160, 10, 10)",
-    playlistItemStripe: "rgb(10, 160, 10)",
-    channelItemStripe: "rgb(40, 40, 200)",
-
-    //modal
-    modalBg: "#1c1c1c",
-
-    //footer
-    playFooterText: "rgb(80, 180, 80)",
-    pauseFooterText: "rgb(220, 100, 100)",
-};
+import { showFontOptions } from "./fontOptions";
+import { colors, typography } from "./consts";
 
 export type View = {
     x: number;
@@ -88,11 +45,17 @@ export function buildViews(state: AppState) {
 
         const lineX = left + Math.max(level, 0) * step;
 
-        const fontSize =
-            level == -1 ? typography.focusLevelFontSize : typography.fontSize;
+        let fontSize = item.fontSize || typography.fontSize;
 
-        const weight =
-            level == -1 ? typography.focusWeight : typography.fontWeight;
+        if (level == -1) {
+            fontSize = typography.focusLevelFontSize;
+        }
+
+        let weight = item.fontWeight || typography.fontWeight;
+
+        if (level == -1) {
+            weight = typography.focusWeight;
+        }
 
         setFont(fontSize, weight);
 
@@ -145,7 +108,9 @@ export function show(state: AppState) {
 
             const cursorY = y - itemHeight / 2;
 
-            ctx.fillStyle = colors.selectionBg;
+            ctx.fillStyle = state.isSelectingFont
+                ? colors.fontSelectionBg
+                : colors.selectionBg;
             ctx.fillRect(0, cursorY, view.x, itemHeight);
 
             if (mode == "normal") ctx.fillStyle = colors.cursorNormalMode;
@@ -210,6 +175,8 @@ export function show(state: AppState) {
     drawFooter(state);
 
     viewModal(state);
+
+    if (state.isSelectingFont) showFontOptions();
 
     viewQuickSearch(state);
 }

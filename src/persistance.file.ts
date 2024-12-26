@@ -115,6 +115,12 @@ const map: Record<string, (item: Item, value: string | undefined) => void> = {
     "/playlist": (item, value) => (item.playlistId = value),
     "/img": (item, value) => (item.image = value),
     "/chTit": (item, value) => (item.channelTitle = value),
+    "/fs": (item, value) => {
+        if (value) item.fontSize = Number.parseInt(value);
+    },
+    "/fw": (item, value) => {
+        if (value) item.fontWeight = Number.parseInt(value);
+    },
 };
 
 function sarializeToFile(root: Item) {
@@ -152,6 +158,8 @@ function formatItemAttributes(item: Item): string {
     if (item.playlistId) atrs.push("playlist:" + item.playlistId);
     if (item.image) atrs.push("img:" + item.image);
     if (item.channelTitle) atrs.push("chTit:" + item.channelTitle);
+    if (item.fontSize) atrs.push("fs:" + item.fontSize);
+    if (item.fontWeight) atrs.push("fw:" + item.fontWeight);
 
     if (atrs.length > 0) return atrs.map((atr) => "/" + atr).join(" ");
     return "";

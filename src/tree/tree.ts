@@ -15,6 +15,9 @@ export type Item = {
     remoteLoadedItemsCount?: number;
     nextPageToken?: string;
     nextPageForItem?: Item;
+
+    fontSize?: number;
+    fontWeight?: number;
 };
 
 export function item(title: string, children: Item[] = []): Item {

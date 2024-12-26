@@ -1,6 +1,7 @@
 import { AppState, state } from "./index";
 import { clamp } from "./utils/math";
-import { typography, View } from "./view";
+import { View } from "./view";
+import { typography } from "./consts";
 
 export function clampOffset(val: number) {
     const maxOffset = Math.max(

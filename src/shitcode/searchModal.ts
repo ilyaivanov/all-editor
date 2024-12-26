@@ -2,7 +2,7 @@ import { removeChar } from "../actions";
 import { AppState } from "../index";
 import { forEachChildBFS, Item } from "../tree/tree";
 import { ctx, setFont, view } from "../utils/canvas";
-import { colors, typography } from "../view";
+import { colors, typography } from "../consts";
 
 type ModalFocus = "unfocus" | "title";
 

@@ -1,8 +1,8 @@
+import { buildViews, show, View } from "./view";
 import { handleKeyPress, onWheel } from "./actions";
 import { canvas, onResize } from "./utils/canvas";
 import { createRoot, findByTitle, item, Item } from "./tree/tree";
 import { Edit } from "./undoRedo";
-import { buildViews, show, View } from "./view";
 import { scrollToSelectedItem } from "./scroll";
 import {
     loadItemsFromLocalStorage,
@@ -56,6 +56,8 @@ export const initialState = {
     brightness: 1,
 
     showPerf: false,
+
+    isSelectingFont: false,
 };
 
 const rootIfNoStored = createRoot([

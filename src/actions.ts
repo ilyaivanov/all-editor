@@ -32,6 +32,8 @@ import {
     onPlayerModeChanged,
     showVideo,
 } from "./player/player";
+import { typography } from "./consts";
+import { getOption } from "./fontOptions";
 
 function doesHandlerMatch(
     e: KeyboardEvent,
@@ -49,7 +51,21 @@ function doesHandlerMatch(
 export async function handleKeyPress(e: KeyboardEvent) {
     if (e.metaKey && e.code == "KeyR") return;
 
-    if (state.searchModal.focusOn != "unfocus") {
+    if (state.isSelectingFont && e.code.startsWith("Digit")) {
+        const val = Number.parseInt(e.code.substring("Digit".length));
+        const option = getOption(val);
+        const { selectedItem } = state;
+
+        if (option.fontSize == typography.fontSize)
+            delete selectedItem.fontSize;
+        else selectedItem.fontSize = option.fontSize;
+
+        if (option.weight == typography.fontWeight)
+            delete selectedItem.fontWeight;
+        else selectedItem.fontWeight = option.weight;
+
+        state.isSelectingFont = false;
+    } else if (state.searchModal.focusOn != "unfocus") {
         handleModalKey(state, e);
     } else if (state.quickSearch.isActive) {
         quickSearchKeyPress(state, e);
@@ -140,6 +156,9 @@ const normalModeHandlers = [
 
     { key: "Enter", fn: breakItem },
     { key: "KeyP", fn: () => (state.showPerf = !state.showPerf), alt: true },
+
+    { key: "KeyT", fn: () => (state.isSelectingFont = true) },
+    { key: "Escape", fn: () => (state.isSelectingFont = false) },
 
     //player
     { key: "Space", fn: onSpacePress },

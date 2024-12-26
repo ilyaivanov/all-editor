@@ -1,7 +1,7 @@
 import { AppState } from "./index";
 import { getPathToParent, isRoot } from "./tree/tree";
 import { ctx, setFont, setFontMonospace, view } from "./utils/canvas";
-import { colors, spacings } from "./view";
+import { colors, spacings } from "./consts";
 
 export function drawFooter(state: AppState) {
     ctx.save();

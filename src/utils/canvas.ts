@@ -1,5 +1,5 @@
 import { state } from "./../index";
-import { spacings, typography } from "../view";
+import { spacings, typography } from "../consts";
 
 export const canvas = document.createElement("canvas");
 export const ctx = canvas.getContext("2d")!;
