@@ -139,6 +139,7 @@ const normalModeHandlers = [
     { key: "KeyL", fn: loadRootFromFile, meta: true, noDef: true },
 
     { key: "Enter", fn: breakItem },
+    { key: "KeyP", fn: () => (state.showPerf = !state.showPerf), alt: true },
 
     //player
     { key: "Space", fn: onSpacePress },

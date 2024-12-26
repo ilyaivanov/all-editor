@@ -14,8 +14,6 @@ import { quickSearchState } from "./shitcode/quickSearch";
 import { createPlayerElem, PlayerMode } from "./player/player";
 import { addEntry, drawPerformance } from "./shitcode/perfMonitor";
 
-const SHOW_PERF = false;
-
 window.addEventListener("resize", () => {
     onResize();
 
@@ -56,6 +54,8 @@ export const initialState = {
     playerState: "pause" as "play" | "pause",
     playerMode: "small" as PlayerMode,
     brightness: 1,
+
+    showPerf: false,
 };
 
 const rootIfNoStored = createRoot([
@@ -123,7 +123,7 @@ export function render() {
     show(state);
     addEntry(performance.now() - start);
 
-    if (SHOW_PERF) drawPerformance();
+    if (state.showPerf) drawPerformance();
 }
 
 function updateUserSettings() {
@@ -156,7 +156,7 @@ window.addEventListener("keydown", async (e) => {
     show(state);
     const now = performance.now();
     addEntry(now - renderStart, renderStart - start);
-    if (SHOW_PERF) drawPerformance();
+    if (state.showPerf) drawPerformance();
 });
 
 window.addEventListener("wheel", (e) => {
@@ -165,7 +165,7 @@ window.addEventListener("wheel", (e) => {
     show(state);
     addEntry(performance.now() - start);
 
-    if (SHOW_PERF) drawPerformance();
+    if (state.showPerf) drawPerformance();
 });
 
 const url = new URL(location.toString());
