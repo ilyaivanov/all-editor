@@ -1,9 +1,16 @@
 import type { AppState } from "./index";
 import { viewModal } from "./shitcode/searchModal";
 import { viewQuickSearch } from "./shitcode/quickSearch";
-import { getPathToParent, isRoot, Item } from "./tree/tree";
-import { ctx, fillSquareAtCenter, setFont, view } from "./utils/canvas";
+import { isRoot, Item } from "./tree/tree";
+import {
+    ctx,
+    fillCircleAtCenter,
+    fillSquareAtCenter,
+    setFont,
+    view,
+} from "./utils/canvas";
 import { lerp } from "./utils/math";
+import { drawFooter } from "./footer";
 
 export const typography = {
     font: `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -16,11 +23,8 @@ export const typography = {
     focusLevelFontSize: 20,
     focusWeight: 800,
 
-    firstLevelFontSize: 14,
-    weightFirstLevel: 600,
-
-    otherLevelFontSize: 12,
-    weightOtherLevel: 400,
+    fontSize: 12,
+    fontWeight: 400,
 };
 
 export const spacings = {
@@ -41,16 +45,25 @@ export const colors = {
     cursorNormalMode: "rgb(20, 200, 20)",
     cursorInsertMode: "rgb(200, 20, 20)",
 
+    videoItemStripe: "rgb(160, 10, 10)",
+    playlistItemStripe: "rgb(10, 160, 10)",
+    channelItemStripe: "rgb(40, 40, 200)",
+
     //modal
     modalBg: "#1c1c1c",
+
+    //footer
+    playFooterText: "rgb(80, 180, 80)",
+    pauseFooterText: "rgb(220, 100, 100)",
 };
+
 export type View = {
     x: number;
     y: number;
     item: Item;
     fontSize: number;
     fontWeight: number;
-    level: number;
+    itemHeight: number;
 };
 
 export function buildViews(state: AppState) {
@@ -76,18 +89,10 @@ export function buildViews(state: AppState) {
         const lineX = left + Math.max(level, 0) * step;
 
         const fontSize =
-            level == -1
-                ? typography.focusLevelFontSize
-                : level == 0
-                  ? typography.firstLevelFontSize
-                  : typography.otherLevelFontSize;
+            level == -1 ? typography.focusLevelFontSize : typography.fontSize;
 
         const weight =
-            level == -1
-                ? typography.focusWeight
-                : level == 0
-                  ? typography.weightFirstLevel
-                  : typography.weightOtherLevel;
+            level == -1 ? typography.focusWeight : typography.fontWeight;
 
         setFont(fontSize, weight);
 
@@ -98,11 +103,11 @@ export function buildViews(state: AppState) {
 
         state.views.push({
             item,
-            level,
             fontSize,
             fontWeight: weight,
             x: lineX,
             y,
+            itemHeight: height * typography.lineHeight,
         });
 
         if (item.isOpen || state.focused == item)
@@ -119,8 +124,8 @@ export function buildViews(state: AppState) {
 }
 
 export function show(state: AppState) {
-    ctx.fillStyle = colors.bg;
-    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    // ctx.fillStyle = colors.bg;
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
     ctx.save();
 
@@ -130,38 +135,71 @@ export function show(state: AppState) {
 
     for (let i = 0; i < state.views.length; i++) {
         if (state.views[i].item == state.selectedItem) {
-            const { x, y, fontSize, fontWeight, item } = state.views[i];
+            const { x, y, fontSize, fontWeight, itemHeight, item } =
+                state.views[i];
             setFont(fontSize, fontWeight);
 
             const m2 = ctx.measureText(item.title.slice(0, position));
             const h = m2.fontBoundingBoxAscent + m2.fontBoundingBoxDescent;
             const cursorX = x + m2.width;
 
-            const cursorHeight = h * typography.lineHeight;
-            const cursorY = y - (h * typography.lineHeight) / 2;
+            const cursorY = y - itemHeight / 2;
 
             ctx.fillStyle = colors.selectionBg;
-            ctx.fillRect(0, cursorY, view.x, cursorHeight);
+            ctx.fillRect(0, cursorY, view.x, itemHeight);
 
             if (mode == "normal") ctx.fillStyle = colors.cursorNormalMode;
             else ctx.fillStyle = colors.cursorInsertMode;
 
-            ctx.fillRect(cursorX - 0.5, cursorY, 1, cursorHeight);
+            ctx.fillRect(cursorX - 0.5, cursorY, 1, itemHeight);
         }
     }
 
     ctx.textBaseline = "middle";
     for (let i = 0; i < state.views.length; i++) {
-        const { x, y, fontSize, fontWeight, item, level } = state.views[i];
-        setFont(fontSize, fontWeight);
+        const { x, y, fontSize, fontWeight, itemHeight, item } = state.views[i];
 
+        let rightLabel = "";
+
+        if (item.remoteTotalItemsCount && item.remoteLoadedItemsCount) {
+            rightLabel =
+                `${item.remoteLoadedItemsCount} / ${item.remoteTotalItemsCount}  ` +
+                rightLabel;
+        }
+
+        if (item.channelTitle) {
+            rightLabel += " " + item.channelTitle;
+        }
+
+        setFont(typography.fontSize, typography.fontWeight);
+
+        if (rightLabel.length > 0) {
+            ctx.textAlign = "right";
+            ctx.fillStyle = colors.footerText;
+            ctx.fillText(rightLabel, view.x - 10, y);
+        }
+
+        setFont(fontSize, fontWeight);
         ctx.fillStyle = colors.text;
+        ctx.textAlign = "left";
         ctx.fillText(item.title, x, y);
 
+        if (item.videoId || item.channelId || item.playlistId) {
+            ctx.fillStyle = getItemTypeColor(item);
+            const cursorY = y - itemHeight / 2;
+            ctx.fillRect(0, cursorY, 2, itemHeight);
+            ctx.fillRect(0, cursorY, 2, itemHeight);
+        }
+
         if (item.children.length > 0 && !item.isOpen && item != state.focused) {
-            const iconSize = level == 0 ? 3 : 2;
+            const iconSize = 3;
             ctx.fillStyle = colors.nonEmptyClosedIcon;
             fillSquareAtCenter(x - 7, y, iconSize);
+        }
+
+        if (item.isLoading) {
+            ctx.fillStyle = getItemTypeColor(item);
+            fillCircleAtCenter(x - 7, y, 2);
         }
     }
 
@@ -192,35 +230,9 @@ function drawScrollBar(state: AppState) {
     }
 }
 
-function drawFooter(state: AppState) {
-    ctx.fillStyle = colors.footerBg;
-    const height = spacings.footerHeight;
-    ctx.fillRect(0, view.y - height, view.x, height);
-
-    ctx.fillStyle = colors.footerText;
-    ctx.textBaseline = "middle";
-    setFont(13);
-
-    const path = getPathToParent(state.focused)
-        .reverse()
-        .map((i) => i.title);
-
-    path.splice(path.length - 1, 1);
-
-    let msg = path.join(" / ") + " / ";
-
-    if (path.length > 0) msg = " / " + msg;
-
-    const width = ctx.measureText(msg).width;
-    const footerTextLeft = 10;
-    ctx.fillText(msg, footerTextLeft, view.y - spacings.footerHeight / 2);
-
-    ctx.fillStyle = colors.footerTextFocus;
-
-    if (!isRoot(state.focused))
-        ctx.fillText(
-            state.focused.title,
-            footerTextLeft + width,
-            view.y - spacings.footerHeight / 2
-        );
+function getItemTypeColor(item: Item) {
+    if (item.videoId) return colors.videoItemStripe;
+    else if (item.playlistId) return colors.playlistItemStripe;
+    else if (item.channelId) return colors.channelItemStripe;
+    return "white";
 }

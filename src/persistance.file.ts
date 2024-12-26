@@ -85,6 +85,13 @@ function parseLine(line: string): { level: number; item: Item } {
     //settings this to undefined, because I want to know if Item is explicitly /closed in a file
     res.isOpen = undefined;
 
+    assignAttributes(line, res);
+
+    return { level, item: res };
+}
+
+export function assignAttributes(line: string, item: Item) {
+    debugger;
     let words = line
         .trimStart()
         .split(" ")
@@ -92,18 +99,22 @@ function parseLine(line: string): { level: number; item: Item } {
             const [key, value] = word.split(":");
             const action = map[key];
             if (action) {
-                action(res, value);
+                action(item, value);
                 return false;
             }
             return true;
         });
 
-    res.title = words.join(" ");
-    return { level, item: res };
+    item.title = words.join(" ");
 }
 
 const map: Record<string, (item: Item, value: string | undefined) => void> = {
     "/c": (item) => (item.isOpen = false),
+    "/vid": (item, value) => (item.videoId = value),
+    "/channel": (item, value) => (item.channelId = value),
+    "/playlist": (item, value) => (item.playlistId = value),
+    "/img": (item, value) => (item.image = value),
+    "/chTit": (item, value) => (item.channelTitle = value),
 };
 
 function sarializeToFile(root: Item) {
@@ -136,6 +147,11 @@ function formatItemAttributes(item: Item): string {
     const atrs: string[] = [];
 
     if (item.children.length > 0 && !item.isOpen) atrs.push("c");
+    if (item.videoId) atrs.push("vid:" + item.videoId);
+    if (item.channelId) atrs.push("channel:" + item.channelId);
+    if (item.playlistId) atrs.push("playlist:" + item.playlistId);
+    if (item.image) atrs.push("img:" + item.image);
+    if (item.channelTitle) atrs.push("chTit:" + item.channelTitle);
 
     if (atrs.length > 0) return atrs.map((atr) => "/" + atr).join(" ");
     return "";

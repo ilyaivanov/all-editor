@@ -1,6 +1,6 @@
 import { state } from "./index";
 import {
-    forEachChild,
+    forEachChildBFS,
     isRoot,
     isSameOrParentOf,
     item,
@@ -20,10 +20,18 @@ import {
 } from "./undoRedo";
 import { moveSelectedItem } from "./movement";
 import { clampOffset } from "./scroll";
-import { loadFromFile, saveToFile } from "./persistance.file";
+import { assignAttributes, loadFromFile, saveToFile } from "./persistance.file";
 import { saveItemsToLocalStorage } from "./persistance.storage";
 import { handleModalKey, showModal } from "./shitcode/searchModal";
 import { quickSearchKeyPress, showQuickSearch } from "./shitcode/quickSearch";
+import { pause, play, resume } from "./player/youtubePlayer";
+import { loadNextPage, loadItem } from "./player/loading";
+import {
+    hideVideo,
+    onBrightnessChanged,
+    onPlayerModeChanged,
+    showVideo,
+} from "./player/player";
 
 function doesHandlerMatch(
     e: KeyboardEvent,
@@ -51,6 +59,17 @@ export async function handleKeyPress(e: KeyboardEvent) {
             if (handler.noDef) e.preventDefault();
 
             await handler.fn();
+        } else if (
+            e.code.startsWith("Digit") &&
+            e.altKey &&
+            !e.metaKey &&
+            !e.ctrlKey &&
+            !e.shiftKey
+        ) {
+            const val = Number.parseInt(e.code.substring("Digit".length)) / 10;
+            if (val == 0) state.brightness = state.brightness == 0 ? 1 : 0;
+            else state.brightness = val;
+            onBrightnessChanged(state.brightness);
         }
     } else {
         const handler = insertModeHandlers.find((h) => doesHandlerMatch(e, h));
@@ -72,6 +91,9 @@ const insertModeHandlers = [
     { key: "KeyK", fn: () => moveSelectedItem(state, "up"), alt: true },
     { key: "KeyL", fn: () => moveSelectedItem(state, "right"), alt: true },
     { key: "KeyH", fn: () => moveSelectedItem(state, "left"), alt: true },
+
+    { key: "KeyV", fn: pasteSelectedItem, meta: true },
+    { key: "KeyC", fn: copySelectedItem, meta: true },
 ];
 
 const normalModeHandlers = [
@@ -96,7 +118,7 @@ const normalModeHandlers = [
     { key: "KeyL", fn: goRight },
     { key: "KeyI", fn: enterInsertMode },
     { key: "Backspace", fn: removeCharFromLeft },
-    { key: "KeyX", fn: removeCurrentChar },
+    // { key: "KeyX", fn: removeCurrentChar },
     { key: "KeyO", fn: addItemBelowAndStartEdit },
     { key: "KeyO", fn: addItemAboveAndStartEdit, shift: true },
     { key: "KeyO", fn: addItemInsideAndStartEdit, ctrl: true },
@@ -117,11 +139,103 @@ const normalModeHandlers = [
     { key: "KeyL", fn: loadRootFromFile, meta: true, noDef: true },
 
     { key: "Enter", fn: breakItem },
+    { key: "KeyP", fn: () => (state.showPerf = !state.showPerf), alt: true },
+
+    //player
+    { key: "Space", fn: onSpacePress },
+    { key: "KeyZ", fn: playPrev },
+    { key: "KeyX", fn: togglePlay },
+    { key: "KeyC", fn: playNext },
+
+    { key: "KeyC", fn: extractChannel, alt: true, shift: true },
+
+    { key: "KeyV", fn: pasteSelectedItem, meta: true },
+    { key: "KeyC", fn: copySelectedItem, meta: true },
+
+    { key: "KeyV", fn: toggleVideoVisibility },
+
+    {
+        key: "KeyM",
+        fn: () => {
+            state.playerMode =
+                state.playerMode == "fullscreen" ? "small" : "fullscreen";
+            onPlayerModeChanged(state.playerMode);
+        },
+        meta: true,
+        noDef: true,
+    },
 ];
+
+function toggleVideoVisibility() {
+    state.isVideoHidden = !state.isVideoHidden;
+    if (state.isVideoHidden) hideVideo();
+    else showVideo();
+}
+
+async function pasteSelectedItem() {
+    let textToPaste = await navigator.clipboard.readText();
+    textToPaste = textToPaste.replace("\n", "");
+    insertStr(textToPaste);
+}
+
+async function copySelectedItem() {
+    await navigator.clipboard.writeText(state.selectedItem.title);
+    // showMessage(textToCopy);
+}
+
+function extractChannel() {
+    const { selectedItem } = state;
+    if (selectedItem.channelId && selectedItem.channelTitle) {
+        const channelItem = item(selectedItem.channelTitle);
+        channelItem.channelId = selectedItem.channelId;
+        const context = selectedItem.parent.children;
+        const index = context.indexOf(selectedItem);
+
+        context.splice(index, 0, channelItem);
+        channelItem.parent = selectedItem.parent;
+
+        state.selectedItem = channelItem;
+    }
+}
+
+function onSpacePress() {
+    if (state.selectedItem.videoId) playItem(state.selectedItem);
+    else if (state.selectedItem.nextPageToken) loadNextPage(state.selectedItem);
+}
+
+function playItem(item: Item) {
+    if (item.videoId) {
+        state.itemPlaying = item;
+        play(item.videoId);
+        state.playerState = "play";
+    }
+}
+function togglePlay() {
+    if (state.playerState == "pause") {
+        state.playerState = "play";
+        resume();
+    } else {
+        state.playerState = "pause";
+        pause();
+    }
+}
+
+function playNext() {
+    if (state.itemPlaying) {
+        const below = getItemBelow(state, state.itemPlaying);
+        if (below) playItem(below);
+    }
+}
+function playPrev() {
+    if (state.itemPlaying) {
+        const below = getItemAbove(state.itemPlaying);
+        if (below) playItem(below);
+    }
+}
 
 function closeAll() {
     const closeEdits: Edit[] = [];
-    forEachChild(state.selectedItem, (i) => {
+    forEachChildBFS(state.selectedItem, (i) => {
         if (i.isOpen) closeEdits.push(changes.closeItem(i));
     });
     if (state.selectedItem)
@@ -132,7 +246,7 @@ function closeAll() {
 
 function openAll() {
     const openEdits: Edit[] = [];
-    forEachChild(state.selectedItem, (i) => {
+    forEachChildBFS(state.selectedItem, (i) => {
         if (!i.isOpen && i.children.length > 0)
             openEdits.push(changes.openItem(i));
     });
@@ -150,9 +264,7 @@ function jumpToSibling(direction: "up" | "down" | "left" | "right") {
     } else if (direction == "up") {
         if (index > 0) changeSelected(context[index - 1]);
     } else if (direction == "left") {
-        if (isSameOrParentOf(state.focused, state.selectedItem.parent)) {
-            changeSelected(state.selectedItem.parent);
-        }
+        changeSelected(state.selectedItem.parent);
     } else if (direction == "right") {
         if (state.selectedItem.children.length > 0) {
             if (state.focused != state.selectedItem) {
@@ -163,6 +275,8 @@ function jumpToSibling(direction: "up" | "down" | "left" | "right") {
     }
 }
 function exitRename() {
+    assignAttributes(state.selectedItem.title, state.selectedItem);
+
     if (state.isItemAddedBeforeInsertMode) {
         state.isItemAddedBeforeInsertMode = false;
         saveItemsToLocalStorage(state);
@@ -284,7 +398,7 @@ function removeSelectedItem() {
 }
 
 export function changeSelected(item: Item | undefined) {
-    if (item && isSameOrParentOf(state.focused, item)) {
+    if (item && isSameOrParentOf(state.focused, item) && !isRoot(item)) {
         if (state.selectedItem != item) state.position = 0;
         state.selectedItem = item;
     }
@@ -345,6 +459,15 @@ function goRight() {
         editTree(state, changes.openItem(selectedItem));
     } else if (selectedItem.children.length > 0)
         changeSelected(selectedItem.children[0]);
+    else if (selectedItem.nextPageToken) {
+        loadNextPage(state.selectedItem);
+    } else if (
+        (selectedItem.playlistId ||
+            (selectedItem.channelId && !selectedItem.videoId)) &&
+        !selectedItem.isLoading
+    ) {
+        loadItem(selectedItem);
+    }
 }
 
 function goDown() {
@@ -364,7 +487,7 @@ export function removeChar(str: string, at: number) {
 function insertStr(str: string) {
     const { selectedItem, position } = state;
     selectedItem.title = insertStrAt(selectedItem.title, str, position);
-    state.position++;
+    state.position += str.length;
 }
 
 function goToNextWord() {

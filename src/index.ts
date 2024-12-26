@@ -1,6 +1,6 @@
 import { handleKeyPress, onWheel } from "./actions";
-import { onResize } from "./utils/canvas";
-import { createRoot, findByTitle, findItem, item, Item } from "./tree/tree";
+import { canvas, onResize } from "./utils/canvas";
+import { createRoot, findByTitle, item, Item } from "./tree/tree";
 import { Edit } from "./undoRedo";
 import { buildViews, show, View } from "./view";
 import { scrollToSelectedItem } from "./scroll";
@@ -11,6 +11,8 @@ import {
 } from "./persistance.storage";
 import { searchInit } from "./shitcode/searchModal";
 import { quickSearchState } from "./shitcode/quickSearch";
+import { createPlayerElem, PlayerMode } from "./player/player";
+import { addEntry, drawPerformance } from "./shitcode/perfMonitor";
 
 window.addEventListener("resize", () => {
     onResize();
@@ -28,6 +30,7 @@ export const initialState = {
     root: empty,
     focused: empty,
     selectedItem: empty,
+    itemPlaying: undefined as Item | undefined,
     mode: "normal" as Mode,
 
     selectedItemTitleBeforeInsertMode: "",
@@ -44,6 +47,15 @@ export const initialState = {
 
     searchModal: searchInit,
     quickSearch: quickSearchState,
+
+    isVideoHidden: false,
+    playerTimeLabel: "",
+    playerTimeSeconds: -1,
+    playerState: "pause" as "play" | "pause",
+    playerMode: "small" as PlayerMode,
+    brightness: 1,
+
+    showPerf: false,
 };
 
 const rootIfNoStored = createRoot([
@@ -74,9 +86,7 @@ const rootIfNoStored = createRoot([
 
 const data: Item = loadItemsFromLocalStorage() || rootIfNoStored;
 
-export const state = {
-    ...initialState,
-};
+export const state = { ...initialState };
 
 const userSettings = loadUserSettings() || {
     itemTitleFocused: "",
@@ -108,8 +118,12 @@ export type V2 = { x: number; y: number };
 export type AppState = typeof initialState;
 
 export function render() {
+    const start = performance.now();
     buildViews(state);
     show(state);
+    addEntry(performance.now() - start);
+
+    if (state.showPerf) drawPerformance();
 }
 
 function updateUserSettings() {
@@ -131,18 +145,27 @@ function updateUserSettings() {
 }
 
 window.addEventListener("keydown", async (e) => {
+    const start = performance.now();
     await handleKeyPress(e);
     buildViews(state);
 
     scrollToSelectedItem(state);
     updateUserSettings();
 
+    const renderStart = performance.now();
     show(state);
+    const now = performance.now();
+    addEntry(now - renderStart, renderStart - start);
+    if (state.showPerf) drawPerformance();
 });
 
 window.addEventListener("wheel", (e) => {
+    const start = performance.now();
     onWheel(e);
     show(state);
+    addEntry(performance.now() - start);
+
+    if (state.showPerf) drawPerformance();
 });
 
 const url = new URL(location.toString());
@@ -152,3 +175,6 @@ if (process.env.DEBUG && url.searchParams.get("test") != null) {
 } else {
     render();
 }
+
+document.body.appendChild(createPlayerElem());
+document.body.appendChild(canvas);

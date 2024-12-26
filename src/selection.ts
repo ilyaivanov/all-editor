@@ -8,7 +8,7 @@ import {
 } from "./tree/tree";
 
 function isFocused(state: AppState, item: Item) {
-    return isRoot(item);
+    return state.focused == item;
 }
 
 export function getItemToSelectAfterRemovingSelected(item: Item) {

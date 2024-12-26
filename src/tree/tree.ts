@@ -1,11 +1,20 @@
-import { loadItemsFromLocalStorage } from "../persistance.storage";
-import { sample } from "./data.root";
-
 export type Item = {
     parent: Item;
     title: string;
     children: Item[];
     isOpen: boolean | undefined;
+
+    videoId?: string;
+    channelId?: string;
+    playlistId?: string;
+    image?: string;
+    channelTitle?: string;
+    isLoading?: boolean;
+
+    remoteTotalItemsCount?: number;
+    remoteLoadedItemsCount?: number;
+    nextPageToken?: string;
+    nextPageForItem?: Item;
 };
 
 export function item(title: string, children: Item[] = []): Item {
@@ -115,13 +124,14 @@ export function insertAsLastChild(parent: Item, item: Item) {
     item.parent = parent;
 }
 
-export function forEachChild(parent: Item, fn: (item: Item) => void) {
-    const stack = [...parent.children];
+export function forEachChildBFS(parent: Item, fn: (item: Item) => void) {
+    const stack = [...parent.children].reverse();
     while (stack.length > 0) {
         const item = stack.pop()!;
 
         fn(item);
 
-        if (item.children.length > 0) stack.push(...item.children);
+        if (item.children.length > 0)
+            stack.unshift(...[...item.children].reverse());
     }
 }

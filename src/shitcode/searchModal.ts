@@ -1,6 +1,6 @@
 import { removeChar } from "../actions";
 import { AppState } from "../index";
-import { forEachChild, Item } from "../tree/tree";
+import { forEachChildBFS, Item } from "../tree/tree";
 import { ctx, setFont, view } from "../utils/canvas";
 import { colors, typography } from "../view";
 
@@ -23,7 +23,7 @@ function updateSearch(state: AppState) {
     searchModal.results.splice(0, searchModal.results.length);
 
     const term = searchModal.text.toLocaleLowerCase();
-    forEachChild(state.root, (item) => {
+    forEachChildBFS(state.root, (item) => {
         if (item.title.toLocaleLowerCase().indexOf(term) >= 0)
             searchModal.results.push(item);
     });
@@ -85,7 +85,7 @@ export function viewModal(state: AppState) {
     ctx.filter = "blur(6px)";
     ctx.fillRect(view.x / 2 - width / 2, 0, width, height);
     ctx.fillStyle = colors.modalBg;
-    ctx.filter = "blur(0px)";
+    ctx.filter = "none";
     ctx.fillRect(view.x / 2 - width / 2, 0, width, height);
 
     let inputWidth = width - 10;
