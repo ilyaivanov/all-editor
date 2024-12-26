@@ -32,6 +32,16 @@ const options = [
         weight: 600,
         label: "Title",
     },
+    {
+        fontSize: 28,
+        weight: 600,
+        label: "Huge",
+    },
+    {
+        fontSize: 28,
+        weight: 800,
+        label: "Huge bold",
+    },
 ];
 export function getOption(position: number) {
     return options[position - 1] || options[0];
@@ -39,7 +49,7 @@ export function getOption(position: number) {
 
 export function showFontOptions() {
     const width = 200;
-    const height = 200;
+    const height = 300;
     ctx.fillStyle = colors.fontSelectionBg;
     ctx.fillRect(view.x - width, view.y / 2 - height / 2, width, height);
 
@@ -55,7 +65,7 @@ export function showFontOptions() {
         const labelHeight = fontHeight();
         y += labelHeight * 1.3;
 
-        if (i != options.length) {
+        if (i != options.length - 1) {
             ctx.fillStyle = colors.footerBg;
             ctx.fillRect(x, y, width, 2);
         }

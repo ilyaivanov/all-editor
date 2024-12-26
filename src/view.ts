@@ -13,11 +13,14 @@ import { lerp } from "./utils/math";
 import { drawFooter } from "./footer";
 import { showFontOptions } from "./fontOptions";
 import { colors, typography } from "./consts";
+import { buildParagraph, Paragraph } from "./paragraph";
+import { drawSelection } from "./shitcode/drawSelection";
 
 export type View = {
     x: number;
     y: number;
     item: Item;
+    paragraph: Paragraph;
     fontSize: number;
     fontWeight: number;
     itemHeight: number;
@@ -64,6 +67,7 @@ export function buildViews(state: AppState) {
 
         y += (height * typography.lineHeight) / 2;
 
+        const paragraph = buildParagraph(item, lineX, y, view.x - lineX - left);
         state.views.push({
             item,
             fontSize,
@@ -71,6 +75,7 @@ export function buildViews(state: AppState) {
             x: lineX,
             y,
             itemHeight: height * typography.lineHeight,
+            paragraph,
         });
 
         if (item.isOpen || state.focused == item)
@@ -80,7 +85,7 @@ export function buildViews(state: AppState) {
                     .reverse()
             );
 
-        y += (height * typography.lineHeight) / 2;
+        y += paragraph.totalHeight - (height * typography.lineHeight) / 2;
     }
 
     state.pageHeight = y + top;
@@ -94,35 +99,16 @@ export function show(state: AppState) {
 
     ctx.translate(0, -state.scrollOffset);
 
-    const { position, mode } = state;
-
     for (let i = 0; i < state.views.length; i++) {
         if (state.views[i].item == state.selectedItem) {
-            const { x, y, fontSize, fontWeight, itemHeight, item } =
-                state.views[i];
-            setFont(fontSize, fontWeight);
-
-            const m2 = ctx.measureText(item.title.slice(0, position));
-            const h = m2.fontBoundingBoxAscent + m2.fontBoundingBoxDescent;
-            const cursorX = x + m2.width;
-
-            const cursorY = y - itemHeight / 2;
-
-            ctx.fillStyle = state.isSelectingFont
-                ? colors.fontSelectionBg
-                : colors.selectionBg;
-            ctx.fillRect(0, cursorY, view.x, itemHeight);
-
-            if (mode == "normal") ctx.fillStyle = colors.cursorNormalMode;
-            else ctx.fillStyle = colors.cursorInsertMode;
-
-            ctx.fillRect(cursorX - 0.5, cursorY, 1, itemHeight);
+            drawSelection(state, state.views[i]);
         }
     }
 
     ctx.textBaseline = "middle";
     for (let i = 0; i < state.views.length; i++) {
-        const { x, y, fontSize, fontWeight, itemHeight, item } = state.views[i];
+        const { x, y, fontSize, fontWeight, itemHeight, item, paragraph } =
+            state.views[i];
 
         let rightLabel = "";
 
@@ -147,7 +133,11 @@ export function show(state: AppState) {
         setFont(fontSize, fontWeight);
         ctx.fillStyle = colors.text;
         ctx.textAlign = "left";
-        ctx.fillText(item.title, x, y);
+        for (let l = 0; l < paragraph.lines.length; l++) {
+            const line = paragraph.lines[l];
+
+            ctx.fillText(line, x, y + l * paragraph.lineHeight);
+        }
 
         if (item.videoId || item.channelId || item.playlistId) {
             ctx.fillStyle = getItemTypeColor(item);
