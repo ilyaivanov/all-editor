@@ -75,17 +75,20 @@ export async function handleKeyPress(e: KeyboardEvent) {
             if (handler.noDef) e.preventDefault();
 
             await handler.fn();
-        } else if (
-            e.code.startsWith("Digit") &&
-            e.altKey &&
-            !e.metaKey &&
-            !e.ctrlKey &&
-            !e.shiftKey
-        ) {
-            const val = Number.parseInt(e.code.substring("Digit".length)) / 10;
-            if (val == 0) state.brightness = state.brightness == 0 ? 1 : 0;
-            else state.brightness = val;
-            onBrightnessChanged(state.brightness);
+        } else if (e.code.startsWith("Digit")) {
+            if (e.altKey && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+                const val =
+                    Number.parseInt(e.code.substring("Digit".length)) / 10;
+                if (val == 0) state.brightness = state.brightness == 0 ? 1 : 0;
+                else state.brightness = val;
+                onBrightnessChanged(state.brightness);
+            } else {
+                let posFraction =
+                    Number.parseInt(e.code.substring("Digit".length)) / 9;
+                state.position = Math.round(
+                    state.selectedItem.title.length * posFraction
+                );
+            }
         }
     } else {
         const handler = insertModeHandlers.find((h) => doesHandlerMatch(e, h));
