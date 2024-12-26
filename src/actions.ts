@@ -163,20 +163,7 @@ const normalModeHandlers = [
     { key: "KeyT", fn: () => (state.isSelectingFont = true) },
     { key: "Escape", fn: () => (state.isSelectingFont = false) },
 
-    {
-        key: "KeyR",
-        fn: () => {
-            const selectedItem = state.selectedItem;
-            if (selectedItem.channelId || selectedItem.playlistId) {
-                selectedItem.children.splice(0, selectedItem.children.length);
-                selectedItem.isOpen = false;
-                selectedItem.remoteTotalItemsCount = 0;
-                selectedItem.remoteLoadedItemsCount = 0;
-                goRight();
-            }
-        },
-        alt: true,
-    },
+    { key: "KeyR", fn: resetRemoveItem, alt: true },
 
     //player
     { key: "Space", fn: onSpacePress },
@@ -202,6 +189,17 @@ const normalModeHandlers = [
         noDef: true,
     },
 ];
+
+function resetRemoveItem() {
+    const selectedItem = state.selectedItem;
+    if (selectedItem.channelId || selectedItem.playlistId) {
+        selectedItem.children.splice(0, selectedItem.children.length);
+        selectedItem.isOpen = false;
+        selectedItem.remoteTotalItemsCount = 0;
+        selectedItem.remoteLoadedItemsCount = 0;
+        goRight();
+    }
+}
 
 function toggleVideoVisibility() {
     state.isVideoHidden = !state.isVideoHidden;
