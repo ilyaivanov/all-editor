@@ -1,4 +1,4 @@
-import { colors } from "../consts";
+import { colors, typography } from "../consts";
 import { AppState } from "../index";
 import { ctx, setFont, view } from "../utils/canvas";
 import { View } from "../view";
@@ -33,8 +33,8 @@ function drawCursor(view: View, state: AppState) {
         else ctx.fillStyle = colors.cursorInsertMode;
 
         ctx.fillRect(
-            paragraph.x + ctx.measureText(t).width - cursorWidth / 2,
-            paragraph.y + currentLine * paragraph.lineHeight - cursorHeight / 2,
+            view.x + ctx.measureText(t).width - cursorWidth / 2,
+            view.y + currentLine * paragraph.lineHeight - cursorHeight / 2,
             cursorWidth,
             cursorHeight
         );
@@ -51,14 +51,26 @@ function sumBy<T>(items: T[], fn: (item: T) => number) {
 
 export function drawSelection(state: AppState, v: View) {
     const { y, fontSize, fontWeight, itemHeight, paragraph } = v;
-    setFont(fontSize, fontWeight);
-
-    const cursorY = y - itemHeight / 2;
 
     ctx.fillStyle = state.isSelectingFont
         ? colors.fontSelectionBg
         : colors.selectionBg;
-    ctx.fillRect(0, cursorY, view.x, paragraph.totalHeight);
 
+    drawItemBg(v);
+
+    setFont(fontSize, fontWeight);
     drawCursor(v, state);
+}
+
+export function drawItemBg(v: View) {
+    const { y, itemHeight, paragraph } = v;
+
+    const cursorY = y - itemHeight / 2;
+
+    ctx.fillRect(
+        0,
+        cursorY - typography.extraSpaceBetweenItems * 0.75,
+        view.x,
+        paragraph.totalHeight + typography.extraSpaceBetweenItems * 1.5
+    );
 }

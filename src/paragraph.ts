@@ -3,8 +3,6 @@ import { Item } from "./tree/tree";
 import { ctx } from "./utils/canvas";
 
 export type Paragraph = {
-    x: number;
-    y: number;
     maxWidth: number;
     item: Item;
 
@@ -14,14 +12,9 @@ export type Paragraph = {
     lineHeight: number;
 };
 
-export function buildParagraph(
-    item: Item,
-    x: number,
-    y: number,
-    maxWidth: number
-) {
+export function buildParagraph(item: Item, maxWidth: number) {
     //prettier-ignore
-    const p: Paragraph = {  x, y, maxWidth, item, lines: [], totalHeight: 0, lineHeight: 0 };
+    const p: Paragraph = {  maxWidth, item, lines: [], totalHeight: 0, lineHeight: 0 };
 
     updateLines(p);
     return p;

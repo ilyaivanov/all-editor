@@ -14,7 +14,7 @@ import { drawFooter } from "./footer";
 import { showFontOptions } from "./fontOptions";
 import { colors, typography } from "./consts";
 import { buildParagraph, Paragraph } from "./paragraph";
-import { drawSelection } from "./shitcode/drawSelection";
+import { drawItemBg, drawSelection } from "./shitcode/drawSelection";
 
 export type View = {
     x: number;
@@ -49,13 +49,11 @@ export function buildViews(state: AppState) {
         const lineX = left + Math.max(level, 0) * step;
 
         let fontSize = item.fontSize || typography.fontSize;
-
         if (level == -1) {
             fontSize = typography.focusLevelFontSize;
         }
 
         let weight = item.fontWeight || typography.fontWeight;
-
         if (level == -1) {
             weight = typography.focusWeight;
         }
@@ -65,16 +63,16 @@ export function buildViews(state: AppState) {
         const ms = ctx.measureText("f");
         const height = ms.fontBoundingBoxAscent + ms.fontBoundingBoxDescent;
 
-        y += (height * typography.lineHeight) / 2;
+        const paragraph = buildParagraph(item, view.x - lineX - left);
 
-        const paragraph = buildParagraph(item, lineX, y, view.x - lineX - left);
+        const itemHeight = height * typography.lineHeight;
         state.views.push({
             item,
             fontSize,
             fontWeight: weight,
             x: lineX,
-            y,
-            itemHeight: height * typography.lineHeight,
+            y: y + itemHeight / 2,
+            itemHeight,
             paragraph,
         });
 
@@ -85,7 +83,7 @@ export function buildViews(state: AppState) {
                     .reverse()
             );
 
-        y += paragraph.totalHeight - (height * typography.lineHeight) / 2;
+        y += paragraph.totalHeight + typography.extraSpaceBetweenItems;
     }
 
     state.pageHeight = y + top;
@@ -107,8 +105,8 @@ export function show(state: AppState) {
 
     ctx.textBaseline = "middle";
     for (let i = 0; i < state.views.length; i++) {
-        const { x, y, fontSize, fontWeight, itemHeight, item, paragraph } =
-            state.views[i];
+        const v = state.views[i];
+        const { x, y, fontSize, fontWeight, itemHeight, item, paragraph } = v;
 
         let rightLabel = "";
 
@@ -122,9 +120,8 @@ export function show(state: AppState) {
             rightLabel += " " + item.channelTitle;
         }
 
-        setFont(typography.fontSize, typography.fontWeight);
-
         if (rightLabel.length > 0) {
+            setFont(typography.smallFontSize);
             ctx.textAlign = "right";
             ctx.fillStyle = colors.footerText;
             ctx.fillText(rightLabel, view.x - 10, y);
@@ -141,9 +138,14 @@ export function show(state: AppState) {
 
         if (item.videoId || item.channelId || item.playlistId) {
             ctx.fillStyle = getItemTypeColor(item);
-            const cursorY = y - itemHeight / 2;
-            ctx.fillRect(0, cursorY, 2, itemHeight);
-            ctx.fillRect(0, cursorY, 2, itemHeight);
+            const cursorY =
+                y - itemHeight / 2 - typography.extraSpaceBetweenItemsHalf;
+            ctx.fillRect(
+                0,
+                cursorY,
+                2,
+                itemHeight + typography.extraSpaceBetweenItems
+            );
         }
 
         if (item.children.length > 0 && !item.isOpen && item != state.focused) {

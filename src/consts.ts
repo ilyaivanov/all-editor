@@ -4,13 +4,18 @@ export const typography = {
      sans-serif`,
     font2: "monospace",
 
-    lineHeight: 1.3,
+    paragraphLineHeight: 1.2,
+    lineHeight: 1,
 
     focusLevelFontSize: 20,
     focusWeight: 800,
 
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 400,
+
+    smallFontSize: 12,
+    extraSpaceBetweenItems: 5,
+    extraSpaceBetweenItemsHalf: 5 / 2,
 };
 
 export const spacings = {

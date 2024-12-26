@@ -3,27 +3,32 @@ import { colors, typography } from "./consts";
 
 const options = [
     {
+        fontSize: 12,
+        weight: 400,
+        label: "Small",
+    },
+    {
         fontSize: typography.fontSize,
         weight: typography.fontWeight,
         label: "Regular",
     },
     {
-        fontSize: 14,
+        fontSize: 16,
         weight: 400,
         label: "Subheader",
     },
     {
-        fontSize: 14,
+        fontSize: 16,
         weight: 600,
         label: "Subheader bold",
     },
     {
-        fontSize: 16,
+        fontSize: 18,
         weight: 600,
         label: "Header",
     },
     {
-        fontSize: 18,
+        fontSize: 20,
         weight: 600,
         label: "Subtitle",
     },
