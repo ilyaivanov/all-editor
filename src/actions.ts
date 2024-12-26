@@ -160,6 +160,19 @@ const normalModeHandlers = [
     { key: "KeyT", fn: () => (state.isSelectingFont = true) },
     { key: "Escape", fn: () => (state.isSelectingFont = false) },
 
+    {
+        key: "KeyR",
+        fn: () => {
+            const selectedItem = state.selectedItem;
+            if (selectedItem.channelId || selectedItem.playlistId) {
+                selectedItem.children.splice(0, selectedItem.children.length);
+                selectedItem.isOpen = false;
+                goRight();
+            }
+        },
+        alt: true,
+    },
+
     //player
     { key: "Space", fn: onSpacePress },
     { key: "KeyZ", fn: playPrev },
