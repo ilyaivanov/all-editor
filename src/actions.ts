@@ -170,6 +170,8 @@ const normalModeHandlers = [
             if (selectedItem.channelId || selectedItem.playlistId) {
                 selectedItem.children.splice(0, selectedItem.children.length);
                 selectedItem.isOpen = false;
+                selectedItem.remoteTotalItemsCount = 0;
+                selectedItem.remoteTotalItemsCount = 0;
                 goRight();
             }
         },

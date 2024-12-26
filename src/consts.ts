@@ -5,7 +5,7 @@ export const typography = {
     font2: "monospace",
 
     paragraphLineHeight: 1.2,
-    lineHeight: 1,
+    lineHeight: 1.1,
 
     focusLevelFontSize: 20,
     focusWeight: 800,
@@ -14,8 +14,8 @@ export const typography = {
     fontWeight: 400,
 
     smallFontSize: 12,
-    extraSpaceBetweenItems: 5,
-    extraSpaceBetweenItemsHalf: 5 / 2,
+    extraSpaceBetweenItems: 6,
+    extraSpaceBetweenItemsHalf: 6 / 2,
 };
 
 export const spacings = {
