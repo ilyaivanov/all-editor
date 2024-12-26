@@ -85,7 +85,7 @@ export function viewModal(state: AppState) {
     ctx.filter = "blur(6px)";
     ctx.fillRect(view.x / 2 - width / 2, 0, width, height);
     ctx.fillStyle = colors.modalBg;
-    ctx.filter = "blur(0px)";
+    ctx.filter = "none";
     ctx.fillRect(view.x / 2 - width / 2, 0, width, height);
 
     let inputWidth = width - 10;

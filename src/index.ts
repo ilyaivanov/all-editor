@@ -12,6 +12,9 @@ import {
 import { searchInit } from "./shitcode/searchModal";
 import { quickSearchState } from "./shitcode/quickSearch";
 import { createPlayerElem, PlayerMode } from "./player/player";
+import { addEntry, drawPerformance } from "./shitcode/perfMonitor";
+
+const SHOW_PERF = false;
 
 window.addEventListener("resize", () => {
     onResize();
@@ -115,8 +118,12 @@ export type V2 = { x: number; y: number };
 export type AppState = typeof initialState;
 
 export function render() {
+    const start = performance.now();
     buildViews(state);
     show(state);
+    addEntry(performance.now() - start);
+
+    if (SHOW_PERF) drawPerformance();
 }
 
 function updateUserSettings() {
@@ -138,18 +145,27 @@ function updateUserSettings() {
 }
 
 window.addEventListener("keydown", async (e) => {
+    const start = performance.now();
     await handleKeyPress(e);
     buildViews(state);
 
     scrollToSelectedItem(state);
     updateUserSettings();
 
+    const renderStart = performance.now();
     show(state);
+    const now = performance.now();
+    addEntry(now - renderStart, renderStart - start);
+    if (SHOW_PERF) drawPerformance();
 });
 
 window.addEventListener("wheel", (e) => {
+    const start = performance.now();
     onWheel(e);
     show(state);
+    addEntry(performance.now() - start);
+
+    if (SHOW_PERF) drawPerformance();
 });
 
 const url = new URL(location.toString());

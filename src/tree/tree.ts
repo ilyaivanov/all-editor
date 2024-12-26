@@ -129,7 +129,6 @@ export function forEachChildBFS(parent: Item, fn: (item: Item) => void) {
     while (stack.length > 0) {
         const item = stack.pop()!;
 
-        console.log(item);
         fn(item);
 
         if (item.children.length > 0)
