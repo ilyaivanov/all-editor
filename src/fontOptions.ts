@@ -54,7 +54,7 @@ export function getOption(position: number) {
 
 export function showFontOptions() {
     const width = 200;
-    const height = 300;
+    const height = 335;
     ctx.fillStyle = colors.fontSelectionBg;
     ctx.fillRect(view.x - width, view.y / 2 - height / 2, width, height);
 

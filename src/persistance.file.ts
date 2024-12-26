@@ -91,7 +91,6 @@ function parseLine(line: string): { level: number; item: Item } {
 }
 
 export function assignAttributes(line: string, item: Item) {
-    debugger;
     let words = line
         .trimStart()
         .split(" ")

@@ -171,7 +171,7 @@ const normalModeHandlers = [
                 selectedItem.children.splice(0, selectedItem.children.length);
                 selectedItem.isOpen = false;
                 selectedItem.remoteTotalItemsCount = 0;
-                selectedItem.remoteTotalItemsCount = 0;
+                selectedItem.remoteLoadedItemsCount = 0;
                 goRight();
             }
         },
