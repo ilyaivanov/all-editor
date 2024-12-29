@@ -4,6 +4,7 @@ import {
     formatTime,
     formatTimeOmitHour,
     getPlayerProgressState,
+    getVolume,
     youtubeIframeId,
 } from "./youtubePlayer";
 
@@ -33,7 +34,7 @@ document.addEventListener("video-progress", () => {
             );
 
             state.playerTimeSeconds = time;
-            state.playerTimeLabel = `(+${loadedSeconds}s) ${fm(info.currentTime)} / ${fm(info.duration)}`;
+            state.playerTimeLabel = `(${getVolume().toFixed(0)}vol) (+${loadedSeconds}s) ${fm(info.currentTime)} / ${fm(info.duration)}`;
             show(state);
         }
     }

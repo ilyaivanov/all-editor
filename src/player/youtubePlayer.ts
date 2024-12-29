@@ -124,6 +124,8 @@ export const getPlayerProgressState = (): PlayerProgressState => {
         duration: player.getDuration(),
     };
 };
+export const getVolume = () => player.getVolume();
+export const setVolume = (v: number) => player.setVolume(v);
 
 export const getDuration = (): number => player.getDuration();
 export const hasVideo = (): boolean => isReady;
