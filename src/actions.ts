@@ -37,10 +37,11 @@ import { getOption } from "./fontOptions";
 
 function doesHandlerMatch(
     e: KeyboardEvent,
+    code: string,
     h: (typeof normalModeHandlers)[number]
 ) {
     return (
-        h.key == e.code &&
+        h.key == code &&
         !!h.shift == !!e.shiftKey &&
         !!h.ctrl == !!e.ctrlKey &&
         !!h.alt == !!e.altKey &&
@@ -48,53 +49,31 @@ function doesHandlerMatch(
     );
 }
 
+async function handleNormalOrInsertMode(e: KeyboardEvent) {
+    const handlers =
+        state.mode == "normal" ? normalModeHandlers : insertModeHandlers;
+
+    let val = 0;
+
+    let handler = handlers.find((h) => doesHandlerMatch(e, e.code, h));
+    if (!handler && e.code.startsWith("Digit")) {
+        handler = handlers.find((h) => doesHandlerMatch(e, "ANumber", h));
+        val = Number.parseInt(e.code.substring("Digit".length));
+    }
+
+    if (handler) {
+        if (handler.noDef) e.preventDefault();
+
+        await handler.fn(val);
+    } else if (state.mode == "insert" && e.key.length == 1) insertStr(e.key);
+}
+
 export async function handleKeyPress(e: KeyboardEvent) {
     if (e.metaKey && e.code == "KeyR") return;
 
-    if (state.isSelectingFont && e.code.startsWith("Digit")) {
-        const val = Number.parseInt(e.code.substring("Digit".length));
-        const option = getOption(val);
-        const { selectedItem } = state;
-
-        if (option.fontSize == typography.fontSize)
-            delete selectedItem.fontSize;
-        else selectedItem.fontSize = option.fontSize;
-
-        if (option.weight == typography.fontWeight)
-            delete selectedItem.fontWeight;
-        else selectedItem.fontWeight = option.weight;
-
-        state.isSelectingFont = false;
-    } else if (state.searchModal.focusOn != "unfocus") {
-        handleModalKey(state, e);
-    } else if (state.quickSearch.isActive) {
-        quickSearchKeyPress(state, e);
-    } else if (state.mode == "normal") {
-        const handler = normalModeHandlers.find((h) => doesHandlerMatch(e, h));
-        if (handler) {
-            if (handler.noDef) e.preventDefault();
-
-            await handler.fn();
-        } else if (e.code.startsWith("Digit")) {
-            if (e.altKey && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
-                const val =
-                    Number.parseInt(e.code.substring("Digit".length)) / 10;
-                if (val == 0) state.brightness = state.brightness == 0 ? 1 : 0;
-                else state.brightness = val;
-                onBrightnessChanged(state.brightness);
-            } else {
-                let posFraction =
-                    Number.parseInt(e.code.substring("Digit".length)) / 9;
-                state.position = Math.round(
-                    state.selectedItem.title.length * posFraction
-                );
-            }
-        }
-    } else {
-        const handler = insertModeHandlers.find((h) => doesHandlerMatch(e, h));
-        if (handler) await handler.fn();
-        else if (e.key.length == 1) insertStr(e.key);
-    }
+    if (state.searchModal.focusOn != "unfocus") handleModalKey(state, e);
+    else if (state.quickSearch.isActive) quickSearchKeyPress(state, e);
+    else handleNormalOrInsertMode(e);
 }
 
 export function onWheel(e: WheelEvent) {
@@ -111,11 +90,29 @@ const insertModeHandlers = [
     { key: "KeyL", fn: () => moveSelectedItem(state, "right"), alt: true },
     { key: "KeyH", fn: () => moveSelectedItem(state, "left"), alt: true },
 
+    { key: "Tab", fn: () => moveSelectedItem(state, "right"), noDef: true },
+    {
+        key: "Tab",
+        fn: () => moveSelectedItem(state, "left"),
+        shift: true,
+        noDef: true,
+    },
+
     { key: "KeyV", fn: pasteSelectedItem, meta: true },
     { key: "KeyC", fn: copySelectedItem, meta: true },
 ];
 
 const normalModeHandlers = [
+    { key: "ANumber", fn: selectFontOption },
+
+    { key: "ANumber", fn: setBrightness, alt: true },
+
+    {
+        key: "Digit4",
+        fn: () => (state.position = state.selectedItem.title.length),
+        shift: true,
+    },
+
     { key: "KeyJ", fn: () => jumpToSibling("down"), ctrl: true },
     { key: "KeyK", fn: () => jumpToSibling("up"), ctrl: true },
     { key: "KeyH", fn: () => jumpToSibling("left"), ctrl: true },
@@ -137,7 +134,7 @@ const normalModeHandlers = [
     { key: "KeyL", fn: goRight },
     { key: "KeyI", fn: enterInsertMode },
     { key: "Backspace", fn: removeCharFromLeft },
-    // { key: "KeyX", fn: removeCurrentChar },
+
     { key: "KeyO", fn: addItemBelowAndStartEdit },
     { key: "KeyO", fn: addItemAboveAndStartEdit, shift: true },
     { key: "KeyO", fn: addItemInsideAndStartEdit, ctrl: true },
@@ -150,6 +147,14 @@ const normalModeHandlers = [
     { key: "KeyK", fn: () => moveSelectedItem(state, "up"), alt: true },
     { key: "KeyL", fn: () => moveSelectedItem(state, "right"), alt: true },
     { key: "KeyH", fn: () => moveSelectedItem(state, "left"), alt: true },
+
+    { key: "Tab", fn: () => moveSelectedItem(state, "right"), noDef: true },
+    {
+        key: "Tab",
+        fn: () => moveSelectedItem(state, "left"),
+        shift: true,
+        noDef: true,
+    },
 
     { key: "KeyM", fn: focusOnSelected },
     { key: "KeyM", fn: focusOnParent, shift: true },
@@ -189,6 +194,29 @@ const normalModeHandlers = [
         noDef: true,
     },
 ];
+
+function selectFontOption(optionNumber: number) {
+    if (state.isSelectingFont) {
+        const option = getOption(optionNumber);
+        const { selectedItem } = state;
+
+        if (option.fontSize == typography.fontSize)
+            delete selectedItem.fontSize;
+        else selectedItem.fontSize = option.fontSize;
+
+        if (option.weight == typography.fontWeight)
+            delete selectedItem.fontWeight;
+        else selectedItem.fontWeight = option.weight;
+
+        state.isSelectingFont = false;
+    } else if (optionNumber == 0) state.position = 0;
+}
+
+function setBrightness(val: number) {
+    if (val == 0) state.brightness = state.brightness == 0 ? 1 : 0;
+    else state.brightness = val / 10;
+    onBrightnessChanged(state.brightness);
+}
 
 function resetRemoveItem() {
     const selectedItem = state.selectedItem;
