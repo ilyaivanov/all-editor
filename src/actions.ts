@@ -103,6 +103,9 @@ const insertModeHandlers = [
 ];
 
 const normalModeHandlers = [
+    { key: "Minus", fn: decreaseFont, noDef: true, meta: true },
+    { key: "Equal", fn: increaseFont, noDef: true, meta: true },
+
     { key: "ANumber", fn: selectFontOption },
 
     { key: "ANumber", fn: setBrightness, alt: true },
@@ -195,6 +198,12 @@ const normalModeHandlers = [
     },
 ];
 
+function decreaseFont() {
+    typography.fontDelta -= 1;
+}
+function increaseFont() {
+    typography.fontDelta += 1;
+}
 function selectFontOption(optionNumber: number) {
     if (state.isSelectingFont) {
         const option = getOption(optionNumber);

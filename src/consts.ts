@@ -11,6 +11,7 @@ export const typography = {
     focusWeight: 800,
 
     fontSize: 13,
+    fontDelta: 0,
     fontWeight: 400,
 
     smallFontSize: 12,

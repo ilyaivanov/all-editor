@@ -48,7 +48,9 @@ export function buildViews(state: AppState) {
 
         const lineX = left + Math.max(level, 0) * step;
 
-        let fontSize = item.fontSize || typography.fontSize;
+        let fontSize =
+            (item.fontSize || typography.fontSize) + typography.fontDelta;
+
         if (level == -1) {
             fontSize = typography.focusLevelFontSize;
         }
