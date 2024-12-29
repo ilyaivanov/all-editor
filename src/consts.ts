@@ -29,7 +29,8 @@ export const colors = {
     text: "#e0e0e0",
     footerText: "#a0a0a0",
     footerTextFocus: "#e0e0e0",
-    selectionBg: "#252525",
+    selectionBg: "#ffffff",
+    selectionBgAlpha: 0.13,
     fontSelectionBg: "#802080",
     scrollbar: "#204040",
 

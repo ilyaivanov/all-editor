@@ -142,12 +142,10 @@ export function show(state: AppState) {
             ctx.fillStyle = getItemTypeColor(item);
             const cursorY =
                 y - itemHeight / 2 - typography.extraSpaceBetweenItemsHalf;
-            ctx.fillRect(
-                0,
-                cursorY,
-                2,
-                itemHeight + typography.extraSpaceBetweenItems
-            );
+            const labelHeight =
+                paragraph.totalHeight + typography.extraSpaceBetweenItems;
+
+            ctx.fillRect(0, cursorY, 2, labelHeight);
         }
 
         if (item.children.length > 0 && !item.isOpen && item != state.focused) {

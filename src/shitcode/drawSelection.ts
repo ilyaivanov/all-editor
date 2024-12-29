@@ -52,25 +52,27 @@ function sumBy<T>(items: T[], fn: (item: T) => number) {
 export function drawSelection(state: AppState, v: View) {
     const { y, fontSize, fontWeight, itemHeight, paragraph } = v;
 
-    ctx.fillStyle = state.isSelectingFont
-        ? colors.fontSelectionBg
-        : colors.selectionBg;
-
-    drawItemBg(v);
+    drawItemBg(state, v);
 
     setFont(fontSize, fontWeight);
     drawCursor(v, state);
 }
 
-export function drawItemBg(v: View) {
+export function drawItemBg(state: AppState, v: View) {
     const { y, itemHeight, paragraph } = v;
 
     const cursorY = y - itemHeight / 2;
 
+    ctx.fillStyle = state.isSelectingFont
+        ? colors.fontSelectionBg
+        : colors.selectionBg;
+
+    ctx.globalAlpha = colors.selectionBgAlpha;
     ctx.fillRect(
         0,
         cursorY - typography.extraSpaceBetweenItems * 0.75,
         view.x,
         paragraph.totalHeight + typography.extraSpaceBetweenItems * 1.5
     );
+    ctx.globalAlpha = 1;
 }
