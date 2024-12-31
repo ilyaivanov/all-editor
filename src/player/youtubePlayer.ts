@@ -1,7 +1,12 @@
+import { state } from "../index";
+import { Item } from "../tree/tree";
+import { loadVideoInfo } from "../youtube/video";
+
 export const youtubeIframeId = "youtubeIframe";
 
 var player: YoutubePlayer;
 var videoRequested: string | undefined;
+var requestedTimeline: number | undefined;
 var isLoadingPlayer = false;
 var isReady = false;
 
@@ -44,12 +49,15 @@ enum PlayerState {
 }
 declare const YT: any;
 
-export function play(videoId: string) {
-    videoRequested = videoId;
+export function play(videoId: string, at?: number) {
+    requestedTimeline = at;
     if (!player && !isLoadingPlayer) init();
     else if (isReady) {
-        player.loadVideoById(videoId);
+        if (videoRequested != videoId) player.loadVideoById(videoId);
+        else if (typeof requestedTimeline == "number")
+            player.seekTo(requestedTimeline, true);
     }
+    videoRequested = videoId;
 }
 
 function init() {
@@ -82,6 +90,9 @@ global.onYouTubeIframeAPIReady = () => {
         },
         events: {
             onReady: () => {
+                if (typeof requestedTimeline == "number")
+                    player.seekTo(requestedTimeline, true);
+
                 progressInterval = setInterval(onTick, 200);
                 isReady = true;
             },
@@ -94,12 +105,23 @@ global.onYouTubeIframeAPIReady = () => {
 
 let progressInterval: NodeJS.Timeout | undefined;
 function onPlayerStateChange(event: any) {
-    const state: PlayerState = event.data;
-    if (state === PlayerState.ENDED) {
+    const playerState: PlayerState = event.data;
+    if (playerState === PlayerState.ENDED) {
         document.dispatchEvent(new CustomEvent("video-ended"));
     }
 
-    if (state === PlayerState.PLAYING) {
+    if (playerState === PlayerState.PLAYING) {
+        if (state.itemPlaying) {
+            const duration = player.getDuration();
+
+            // remove application specific code from the player
+            if (typeof state.itemPlaying.timeline != "number") {
+                updateVideoDuration(state.itemPlaying, duration);
+                if (!state.itemPlaying.videoInfoLoaded)
+                    loadVideoInfo(state.itemPlaying);
+            }
+        }
+
         if (!progressInterval) progressInterval = setInterval(onTick, 200);
     } else {
         if (progressInterval) {
@@ -133,6 +155,16 @@ export const seek = (time: number, allowSeekAhead: boolean) =>
     player.seekTo(time, allowSeekAhead);
 export const pause = () => player.pauseVideo();
 export const resume = () => player.playVideo();
+
+export function updateVideoDuration(item: Item, duration: number) {
+    item.durationTime = duration;
+    item.durationFormattted = formatDuration(duration);
+}
+export function formatDuration(t: number) {
+    const oneHour = 60 * 60;
+    if (t < oneHour) return formatTimeOmitHour(t);
+    return formatTime(t);
+}
 
 export const formatTimeOmitHour = (t: number) => {
     let minutes = Math.floor(t / 60);

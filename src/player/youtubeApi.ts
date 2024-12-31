@@ -29,6 +29,23 @@ export async function findPlaylistVideos(
     };
 }
 
+export async function getVideoInfo(id: string) {
+    const res = await fetch(get("getVideoInfo", { id }));
+    return await res.json();
+}
+
+export async function getVideoComments(videoId: string) {
+    const res = await fetch(
+        get("getVideoComments", {
+            videoId,
+            fields: "items(id,snippet(topLevelComment(snippet(textOriginal))))",
+            order: "relevance",
+            maxResults: "50",
+        })
+    );
+    return await res.json();
+}
+
 export async function getChannelInfo(
     channelId: string,
     pageToken?: string

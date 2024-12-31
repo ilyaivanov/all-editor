@@ -7,6 +7,7 @@ import {
     fillCircleAtCenter,
     fillSquareAtCenter,
     setFont,
+    setFontMonospace,
     view,
 } from "./utils/canvas";
 import { lerp } from "./utils/math";
@@ -46,7 +47,12 @@ export function buildViews(state: AppState) {
     while (stack.length > 0) {
         const { item, level } = stack.pop()!;
 
-        const lineX = left + Math.max(level, 0) * step;
+        let lineX = left + Math.max(level, 0) * step;
+
+        // if (item.bullet) {
+        //TODO: instead of hardcoded value I need to measure all bullets of siblings
+        // lineX += 35;
+        // }
 
         let fontSize =
             (item.fontSize || typography.fontSize) + typography.fontDelta;
@@ -126,26 +132,26 @@ export function show(state: AppState) {
             setFont(typography.smallFontSize);
             ctx.textAlign = "right";
             ctx.fillStyle = colors.footerText;
-            ctx.fillText(rightLabel, view.x - 10, y);
+            let label = rightLabel;
+            if (item.durationTime)
+                label = item.durationFormattted + " " + label;
+
+            ctx.fillText(label, view.x - 10, y);
         }
+
+        // if (item.bullet) {
+        //     setFont(10);
+        //     ctx.fillStyle = "#b3b3b3";
+        //     ctx.textAlign = "right";
+        //     ctx.fillText(item.bullet, x - 10, y);
+        // }
 
         setFont(fontSize, fontWeight);
         ctx.fillStyle = colors.text;
         ctx.textAlign = "left";
         for (let l = 0; l < paragraph.lines.length; l++) {
             const line = paragraph.lines[l];
-
             ctx.fillText(line, x, y + l * paragraph.lineHeight);
-        }
-
-        if (item.videoId || item.channelId || item.playlistId) {
-            ctx.fillStyle = getItemTypeColor(item);
-            const cursorY =
-                y - itemHeight / 2 - typography.extraSpaceBetweenItemsHalf;
-            const labelHeight =
-                paragraph.totalHeight + typography.extraSpaceBetweenItems;
-
-            ctx.fillRect(0, cursorY, 2, labelHeight);
         }
 
         if (item.children.length > 0 && !item.isOpen && item != state.focused) {
@@ -154,9 +160,19 @@ export function show(state: AppState) {
             fillSquareAtCenter(x - 7, y, iconSize);
         }
 
-        if (item.isLoading) {
-            ctx.fillStyle = getItemTypeColor(item);
-            fillCircleAtCenter(x - 7, y, 2);
+        const stripeColor = getItemTypeColor(item);
+        if (stripeColor) {
+            ctx.fillStyle = stripeColor;
+            const cursorY =
+                y - itemHeight / 2 - typography.extraSpaceBetweenItemsHalf;
+            const labelHeight =
+                paragraph.totalHeight + typography.extraSpaceBetweenItems;
+
+            ctx.fillRect(0, cursorY, 3, labelHeight);
+
+            if (item.isLoading) {
+                fillCircleAtCenter(x - 7, y, 2);
+            }
         }
     }
 
@@ -190,8 +206,9 @@ function drawScrollBar(state: AppState) {
 }
 
 function getItemTypeColor(item: Item) {
-    if (item.videoId) return colors.videoItemStripe;
+    if (typeof item.timeline == "number") return colors.videoTimeItemStripe;
+    else if (item.videoId) return colors.videoItemStripe;
     else if (item.playlistId) return colors.playlistItemStripe;
     else if (item.channelId) return colors.channelItemStripe;
-    return "white";
+    return undefined;
 }

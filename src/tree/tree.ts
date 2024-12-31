@@ -10,6 +10,7 @@ export type Item = {
     image?: string;
     channelTitle?: string;
     isLoading?: boolean;
+    videoDuration?: number;
 
     remoteTotalItemsCount?: number;
     remoteLoadedItemsCount?: number;
@@ -18,6 +19,11 @@ export type Item = {
 
     fontSize?: number;
     fontWeight?: number;
+
+    durationFormattted?: string;
+    durationTime?: number;
+    videoInfoLoaded?: boolean;
+    timeline?: number;
 };
 
 export function item(title: string, children: Item[] = []): Item {
@@ -30,6 +36,13 @@ export function item(title: string, children: Item[] = []): Item {
     children.forEach((c) => (c.parent = res));
     return res;
 }
+
+export function itemVideo(title: string, videoId: string) {
+    const res = item(title);
+    res.videoId = videoId;
+    return res;
+}
+
 export function createRoot(children: Item[]) {
     const res = item("Root", children);
     res.parent = res;

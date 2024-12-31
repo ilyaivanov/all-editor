@@ -34,6 +34,8 @@ import {
 } from "./player/player";
 import { typography } from "./consts";
 import { getOption } from "./fontOptions";
+import { getVideoInfo } from "./player/youtubeApi";
+import { loadVideoInfo } from "./youtube/video";
 
 function doesHandlerMatch(
     e: KeyboardEvent,
@@ -73,7 +75,7 @@ export async function handleKeyPress(e: KeyboardEvent) {
 
     if (state.searchModal.focusOn != "unfocus") handleModalKey(state, e);
     else if (state.quickSearch.isActive) quickSearchKeyPress(state, e);
-    else handleNormalOrInsertMode(e);
+    else await handleNormalOrInsertMode(e);
 }
 
 export function onWheel(e: WheelEvent) {
@@ -171,7 +173,7 @@ const normalModeHandlers = [
     { key: "KeyT", fn: () => (state.isSelectingFont = true) },
     { key: "Escape", fn: () => (state.isSelectingFont = false) },
 
-    { key: "KeyR", fn: resetRemoveItem, alt: true },
+    { key: "KeyR", fn: resetRemoteItem, alt: true },
 
     //player
     { key: "Space", fn: onSpacePress },
@@ -227,14 +229,23 @@ function setBrightness(val: number) {
     onBrightnessChanged(state.brightness);
 }
 
-function resetRemoveItem() {
+async function resetRemoteItem() {
     const selectedItem = state.selectedItem;
-    if (selectedItem.channelId || selectedItem.playlistId) {
+    const isMediaItem =
+        selectedItem.channelId ||
+        selectedItem.playlistId ||
+        selectedItem.videoId;
+
+    if (isMediaItem) {
         selectedItem.children.splice(0, selectedItem.children.length);
         selectedItem.isOpen = false;
         selectedItem.remoteTotalItemsCount = 0;
         selectedItem.remoteLoadedItemsCount = 0;
-        goRight();
+
+        if (selectedItem.videoId) {
+            selectedItem.videoInfoLoaded = false;
+            await loadVideoInfo(selectedItem);
+        } else goRight();
     }
 }
 
@@ -275,10 +286,10 @@ function onSpacePress() {
     else if (state.selectedItem.nextPageToken) loadNextPage(state.selectedItem);
 }
 
-function playItem(item: Item) {
+async function playItem(item: Item) {
     if (item.videoId) {
         state.itemPlaying = item;
-        play(item.videoId);
+        play(item.videoId, item.timeline);
         state.playerState = "play";
     }
 }

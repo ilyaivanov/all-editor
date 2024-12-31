@@ -42,6 +42,7 @@ export const colors = {
     videoItemStripe: "rgb(160, 10, 10)",
     playlistItemStripe: "rgb(10, 160, 10)",
     channelItemStripe: "rgb(40, 40, 200)",
+    videoTimeItemStripe: "rgb(140, 40, 200)",
 
     //modal
     modalBg: "#1c1c1c",
